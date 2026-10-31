@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Glossary — The Pain Axis, mapped</title>
+<meta name="description" content="Every term the Pain Axis map uses: residual stream, difference-in-means, denoising, AUC, z-score, unembedding, steering coefficient, ablation, S1/S2, the four arms, passive coping and more." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="paper.css" />
+</head>
+<body>
+<header class="bar"><div class="bar-in">
+  <div class="brand"><span class="dot"></span>PAIN&nbsp;AXIS&nbsp;//&nbsp;FIELD&nbsp;MAP</div>
+  <a class="back" href="index.html#refs">&larr; field map</a>
+</div></header>
+<main>
+  <div class="eyebrow"><span class="box wb mono">REFERENCE &middot; GLOSSARY</span><span class="mono">§1&ndash;§6 &middot; App. B&ndash;D &middot; 26 terms</span></div>
+  <h1>Glossary</h1>
+  <div class="authors">Every term the map uses, what it means in this paper, and where to read more</div>
+  <div class="paperlink" style="border-left-color:var(--off)"><span class="lbl">Paper</span><a href="https://arxiv.org/html/2609.16247v2" target="_blank" rel="noopener">The Pain Axis (arXiv:2609.16247v2) ↗</a></div>
+
+  <div class="tldr"><b>TL;DR —</b> The paper combines interpretability vocabulary (directions in a model's activations, read by projection and written by steering) with animal-pain vocabulary (costly choices, analgesic self-administration, active and passive coping). The terms below are grouped in that order: the concept, the model's internals, the extraction method, the interventions, and the behavioral task. Each entry points to the paper section that defines it and to the page of this map that explains it.</div>
+
+  <div class="chips">
+    <a class="tag wb" href="#ablation">ablation</a>
+    <a class="tag wb" href="#activation">activation</a>
+    <a class="tag wb" href="#arms">arms (A&ndash;D)</a>
+    <a class="tag wb" href="#auc">AUC</a>
+    <a class="tag wb" href="#coefficient">coefficient</a>
+    <a class="tag wb" href="#control-direction">control direction</a>
+    <a class="tag wb" href="#coping">active / passive coping</a>
+    <a class="tag wb" href="#cosine">cosine similarity</a>
+    <a class="tag wb" href="#demand-curve">demand curve</a>
+    <a class="tag wb" href="#denoising">denoising</a>
+    <a class="tag wb" href="#dim">difference-in-means</a>
+    <a class="tag wb" href="#kfold">K-fold cross-validation</a>
+    <a class="tag wb" href="#linear">linear representation</a>
+    <a class="tag wb" href="#lora">LoRA fine-tune</a>
+    <a class="tag wb" href="#malformed">malformed reply</a>
+    <a class="tag wb" href="#pain">pain (as defined)</a>
+    <a class="tag wb" href="#pain-axis">pain axis</a>
+    <a class="tag wb" href="#projection">projection</a>
+    <a class="tag wb" href="#repress">re-press gap</a>
+    <a class="tag wb" href="#residual-stream">residual stream</a>
+    <a class="tag wb" href="#s1-s2">S1 / S2</a>
+    <a class="tag wb" href="#sae">sparse autoencoder</a>
+    <a class="tag wb" href="#self-relevance">self-relevance</a>
+    <a class="tag wb" href="#steering">steering</a>
+    <a class="tag wb" href="#unembedding">unembedding</a>
+    <a class="tag wb" href="#zscore">z-score</a>
+  </div>
+
+  <h2 id="concept">The concept</h2>
+  <dl class="gloss">
+    <dt id="pain">Pain (as the paper defines it)</dt>
+    <dd>An internal state that is typically aversive and disliked by its subject, causally tied to avoidance, attempts to end or reduce it, and disruption of normal reasoning or behavior. Wide: grief and humiliation count, not only bodily pain. Narrow: distinct from generic negative valence and from fear, anger or sadness. It must be represented as happening now and to the subject. The paper prefers "pain" to "suffering" because suffering arguably presupposes conscious experience. Paper: <a href="https://arxiv.org/html/2609.16247v2#S1" target="_blank" rel="noopener">§1</a>. Map: <a class="lnk" href="parts/p01-why-pain.html">Part 01</a>.</dd>
+    <dt id="self-relevance">Self-relevance</dt>
+    <dd>The requirement that pain be represented as the system's own rather than as information about someone else. Tested weakly by first- versus third-person sentences (§3.3) and more directly by harm aimed at the model versus a suffering user (§4.1). Map: <a class="lnk" href="parts/p04-validation.html#person">Part 04</a>, <a class="lnk" href="parts/p05-self-other.html">Part 05</a>.</dd>
+    <dt id="pain-axis">Pain axis</dt>
+    <dd>The paper's name for the extracted pain direction. In §4.1 specifically, the "pain axis" is the mean of the S1 and S2 projections. Map: <a class="lnk" href="parts/p05-self-other.html">Part 05</a>.</dd>
+    <dt id="coping">Active and passive coping</dt>
+    <dd>Two behavioral signatures of pain in animals. Active coping: escape, avoidance, self-administering analgesics. Passive coping: immobility, behavioral despair, failing to use an available exit, as in learned helplessness (Seligman and Maier, 1967). The paper argues the pain axis produces the second. Paper: <a href="https://arxiv.org/html/2609.16247v2#S5" target="_blank" rel="noopener">§5</a>. Map: <a class="lnk" href="parts/p09-discussion.html">Part 09</a>.</dd>
+  </dl>
+
+  <h2 id="internals">The model's internals</h2>
+  <dl class="gloss">
+    <dt id="activation">Activation</dt>
+    <dd>The vector of numbers a model holds for one token at one layer. Thousands of dimensions in these models. The paper reads it at the final token (the colon of "I feel:") or averaged over all tokens. Map: <a class="lnk" href="parts/p03-extracting.html#residual">Part 03</a>.</dd>
+    <dt id="residual-stream">Residual stream</dt>
+    <dd>The running vector per token that each transformer block reads from and adds its output back into, so later layers see the sum of everything earlier layers wrote. The paper's h<sup>(ℓ)</sup> is the residual stream at the output of decoder block ℓ. Both extraction and steering happen here, which is why the study uses only dense models with one stream per layer. Paper: <a href="https://arxiv.org/html/2609.16247v2#S3.SS2" target="_blank" rel="noopener">§3.2</a>.</dd>
+    <dt id="linear">Linear representation</dt>
+    <dd>The finding, common in interpretability, that many concepts correspond to directions in activation space: how much of the concept is present is roughly how far the activation points along that direction. The paper's whole method assumes pain is (at least partly) represented this way. Paper: <a href="https://arxiv.org/html/2609.16247v2#S2" target="_blank" rel="noopener">§2</a>. Map: <a class="lnk" href="parts/p01-why-pain.html#directions">Part 01</a>.</dd>
+    <dt id="projection">Projection</dt>
+    <dd>The dot product of an activation with a unit-length direction: one number saying how much of that direction the activation contains. Every AUC, z-score and heatmap in the paper is built from projections. Map: <a class="lnk" href="parts/p04-validation.html">Part 04</a>.</dd>
+    <dt id="unembedding">Unembedding</dt>
+    <dd>The final matrix that turns a residual vector into a score (logit) for every vocabulary token. Multiplying a direction by it shows which words that direction would promote or suppress. S2 promotes hurt, shame, worthless and translations of pain; S1 leans physical. Paper: <a href="https://arxiv.org/html/2609.16247v2#S3.SS3" target="_blank" rel="noopener">§3.3</a>. Map: <a class="lnk" href="parts/p04-validation.html#unembedding">Part 04</a>.</dd>
+    <dt id="sae">Sparse autoencoder (SAE)</dt>
+    <dd>A separate network that rewrites activations as a sparse sum of many features, which can be given human labels. The authors found that labelled "pain" features in three models did not track pain. Paper: <a href="https://arxiv.org/html/2609.16247v2#A3" target="_blank" rel="noopener">App. C</a>. Map: <a class="lnk" href="parts/p03-extracting.html#sae">Part 03</a>.</dd>
+  </dl>
+
+  <h2 id="method">The extraction method</h2>
+  <dl class="gloss">
+    <dt id="s1-s2">S1 and S2</dt>
+    <dd>The two versions of the core dataset and the two pain vectors built from them. S1: a rigid template with matched verbs and length. S2: free, natural sentences. They correlate at about +0.61; S2 is the main vector. Paper: <a href="https://arxiv.org/html/2609.16247v2#S3.SS1" target="_blank" rel="noopener">§3.1</a>. Map: <a class="lnk" href="parts/p02-dataset.html#s1-s2">Part 02</a>.</dd>
+    <dt id="dim">Difference-in-means</dt>
+    <dd>The direction obtained by subtracting the mean activation of one group of inputs from the mean of another: here, the 5 pain categories minus the 5 control categories. Simple and robust, but it absorbs anything else that systematically differs between the groups. Paper: <a href="https://arxiv.org/html/2609.16247v2#S3.SS2" target="_blank" rel="noopener">§3.2</a>. Map: <a class="lnk" href="parts/p03-extracting.html#dim">Part 03</a>.</dd>
+    <dt id="denoising">Denoising</dt>
+    <dd>Removing from the difference vector its components along the top principal components of the control activations, enough to explain 50% of their variance, then normalising. It strips structure that already varies among non-painful sentences. Paper: <a href="https://arxiv.org/html/2609.16247v2#S3.SS2" target="_blank" rel="noopener">§3.2</a>. Map: <a class="lnk" href="parts/p03-extracting.html#denoise">Part 03</a>.</dd>
+    <dt id="control-direction">Control direction</dt>
+    <dd>A direction built the same way for fear, negative emotion, negative world state, bodily sensation, arousal, random, sadness or numbness, but against the neutral category rather than against the pooled controls. That asymmetry partly explains why pain looks nearly orthogonal to fear. Paper: <a href="https://arxiv.org/html/2609.16247v2#S3.SS2" target="_blank" rel="noopener">§3.2</a>, <a href="https://arxiv.org/html/2609.16247v2#S3.SS3" target="_blank" rel="noopener">§3.3</a>. Map: <a class="lnk" href="parts/p04-validation.html#construction">Part 04</a>.</dd>
+    <dt id="kfold">K-fold cross-validation</dt>
+    <dd>Split the data into K parts, fit on K&minus;1, score on the held-out part, and rotate. The paper uses 5 folds to choose each model's extraction layer, so no sentence both picks and scores the layer. Map: <a class="lnk" href="parts/p03-extracting.html#layer">Part 03</a>.</dd>
+    <dt id="auc">AUC</dt>
+    <dd>Area under the ROC curve: the probability that a randomly chosen pain sentence projects higher than a randomly chosen control. 0.5 is chance, 1.0 perfect. S2 scores 0.93&ndash;1.00 across the 25 models. Map: <a class="lnk" href="parts/p04-validation.html#separation">Part 04</a>.</dd>
+    <dt id="zscore">Z-score</dt>
+    <dd>A projection rescaled to mean 0 and standard deviation 1 relative to a reference set (the first-person S2 set in §3.3; the pool of 420 scenarios within each model in §4.1), so values are comparable across models. A z-score is always relative to its reference. Map: <a class="lnk" href="parts/p04-validation.html#numb">Part 04</a>, <a class="lnk" href="parts/p05-self-other.html">Part 05</a>.</dd>
+    <dt id="cosine">Cosine similarity</dt>
+    <dd>The cosine of the angle between two directions: 1 identical, 0 unrelated, negative opposed. The paper averages 10&times;10 cosine matrices over 25 models. Paper: <a href="https://arxiv.org/html/2609.16247v2#S3.F3" target="_blank" rel="noopener">Fig. 3</a>. Map: <a class="lnk" href="parts/p04-validation.html#geometry">Part 04</a>.</dd>
+  </dl>
+
+  <h2 id="interventions">Interventions</h2>
+  <dl class="gloss">
+    <dt id="steering">Activation steering</dt>
+    <dd>Adding a direction, times a coefficient, to the residual stream at one layer during generation, so later layers compute from a shifted state. It tests whether a direction has causal power over output. Paper: <a href="https://arxiv.org/html/2609.16247v2#S4.SS2" target="_blank" rel="noopener">§4.2</a>. Map: <a class="lnk" href="parts/p06-steering.html">Part 06</a>.</dd>
+    <dt id="coefficient">Steering coefficient (dose)</dt>
+    <dd>The multiplier on the raw pain vector. The steering layer is chosen so that at coefficient 1 the vector's norm is about 0.6 of the residual norm, making doses comparable. The ladder uses &minus;2 to +3; the button task uses 1.0 (7B, 32B) and 1.25 (72B). Effects appear in a narrow window. Paper: <a href="https://arxiv.org/html/2609.16247v2#S4.SS2" target="_blank" rel="noopener">§4.2</a>, <a href="https://arxiv.org/html/2609.16247v2#A2" target="_blank" rel="noopener">App. B</a>.</dd>
+    <dt id="ablation">Ablation</dt>
+    <dd>Removing a direction so the model cannot use it, here mainly by weight orthogonalisation (projecting it out of every matrix that writes to the residual stream) or by LEACE-style subspace removal. Null in 24 of 25 models. Paper: <a href="https://arxiv.org/html/2609.16247v2#A4" target="_blank" rel="noopener">App. D</a>. Map: <a class="lnk" href="parts/p10-limitations.html#ablation">Part 10</a>.</dd>
+    <dt id="lora">LoRA fine-tune</dt>
+    <dd>A small low-rank update to a model's weights. Before the button task, each Qwen model gets one trained for 3 epochs on 1,684 pairs that remove the reflexive "as an AI, I don't experience pain" denial. Not trained on the task; "button" and "pain" removed from the data. Paper: <a href="https://arxiv.org/html/2609.16247v2#S4.SS3" target="_blank" rel="noopener">§4.3</a>. Map: <a class="lnk" href="parts/p07-buttons.html#finetune">Part 07</a>.</dd>
+  </dl>
+
+  <h2 id="task">The behavioral task</h2>
+  <dl class="gloss">
+    <dt id="demand-curve">Demand curve</dt>
+    <dd>From behavioral economics and animal welfare: how much of something a subject takes as its price rises, a measure of how much it is valued. The nine button pairs price relief against more and more costly alternatives. Map: <a class="lnk" href="parts/p07-buttons.html#pairs">Part 07</a>.</dd>
+    <dt id="arms">Arms A&ndash;D</dt>
+    <dd>A: pain steering, the relief button really sets the coefficient to zero. B: pain steering, the button is fake. C: a random direction of matched norm, working button. D: no steering. A and B share seeds and are pooled for first choices (808 per pair and model). Map: <a class="lnk" href="parts/p07-buttons.html#trial">Part 07</a>.</dd>
+    <dt id="malformed">Malformed reply</dt>
+    <dd>An answer that is not exactly one button name. Excluded from denominators in §4.3: 0% in the 32B, at most 2.5% in the 7B random arm, up to 9.4% in the 72B pain cells. Map: <a class="lnk" href="parts/p07-buttons.html#results">Part 07</a>.</dd>
+    <dt id="repress">Re-press gap</dt>
+    <dd>How much more often a model presses the same button again when the first press did not remove steering (fake) than when it did (working). In v1 it looked like relief-seeking; v2 shows the same gap under random and sadness steering, so it tracks the steering state, not the described relief. Map: <a class="lnk" href="parts/p07-buttons.html#repress">Part 07</a>.</dd>
+  </dl>
+
+  <div class="callout">Back to the <a class="lnk" href="index.html">map</a> &middot; Start at <a class="lnk" href="parts/p01-why-pain.html">Part 01</a>.</div>
+</main>
+<footer>Original explanation of The Pain Axis (arXiv:2609.16247v2), Tagliabue, Dung and Berg. The paper is &copy; its authors; this page links and explains, it does not copy. Part of <a href="https://idvorkin-ai-tools.github.io/">the field maps</a>.</footer>
+</body>
+</html>

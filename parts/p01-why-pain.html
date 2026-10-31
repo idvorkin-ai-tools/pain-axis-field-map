@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Why pain, and why not just "negative" — The Pain Axis, mapped</title>
+<meta name="description" content="The paper's functional definition of pain, why it must be told apart from fear, sadness and generic negativity, and the interpretability and animal-pain work it builds on." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../paper.css" />
+</head>
+<body>
+<header class="bar"><div class="bar-in">
+  <div class="brand"><span class="dot"></span>PAIN&nbsp;AXIS&nbsp;//&nbsp;FIELD&nbsp;MAP</div>
+  <a class="back" href="../index.html#question">&larr; field map</a>
+</div></header>
+<main>
+  <div class="eyebrow"><span class="box wb mono">PART 01 &middot; THE QUESTION</span><span class="mono">§1 Introduction &middot; §2 Previous work</span></div>
+  <h1>Why pain, and why not just "negative"</h1>
+  <div class="authors">A definition built from what pain does rather than how it feels, and the two research traditions the paper joins.</div>
+  <div class="paperlink" style="border-left-color:var(--off)"><span class="lbl">Paper</span><a href="https://arxiv.org/html/2609.16247v2#S1" target="_blank" rel="noopener">The Pain Axis, §1 — Introduction ↗</a></div>
+  <div class="paperlink" style="border-left-color:var(--off)"><span class="lbl">Paper</span><a href="https://arxiv.org/html/2609.16247v2#S2" target="_blank" rel="noopener">The Pain Axis, §2 — Previous work ↗</a></div>
+
+  <div class="tldr"><b>TL;DR —</b> The paper defines pain by its job: an unpleasant state the subject dislikes, happening <em>now</em> and <em>to the subject</em>, that pushes toward avoidance and disrupts normal behavior. That definition is deliberately wide (grief and humiliation count) but it excludes fear, anger, sadness and generic bad feeling. The research question has two halves. First, does a model hold pain as its own internal direction, separate from those neighbours? Second, does that direction act the way pain would: tied to the self, able to change behavior? The methods come from interpretability (reading and writing directions in a model's activations) and from animal-pain research (testing pain through costly choices instead of asking).</div>
+
+  <p class="lead">Language models talk fluently about suffering, and recent interpretability work has found internal directions that line up with emotion words. Neither fact says much about pain in particular. A model could produce every word of a grief poem from a general "this is sad" signal, or from a pile of loosely related features. The paper's opening move is to make the question narrow enough to test: define pain so it can be told apart from its look-alikes, look for a representation that matches the definition, and then check the representation against the functions the definition names.</p>
+
+  <h2 id="definition">A definition built from function</h2>
+  <p>The authors do not start from what pain feels like, which cannot be measured in a model. They start from the role pain plays (<a href="https://arxiv.org/html/2609.16247v2#S1" target="_blank" rel="noopener">§1</a>). On their account, pain is an internal state that is usually aversive and disliked by whoever has it, and that is causally linked to a recognisable set of behaviors: avoiding the cause, trying to end or reduce the state, and having ordinary reasoning or behavior knocked off course. Each of those is something an experiment can look for.</p>
+  <p>Two choices in the definition shape everything later.</p>
+  <ul>
+    <li><b>It is wide.</b> Pain is not only a bodily signal. Grief, humiliation and the sting of being forced to act against your values all count. That is why the dataset in <a class="lnk" href="p02-dataset.html">Part 02</a> has five pain categories and only one of them is physical.</li>
+    <li><b>It is narrow in another direction.</b> Pain is not the same as feeling bad. Fear, anger and sadness are separate states, and so is general negative valence (the broad good-versus-bad dimension of feeling). A direction that fires for all of those is not a pain direction.</li>
+  </ul>
+  <p>There is one more requirement, which becomes the test in <a class="lnk" href="p05-self-other.html">Part 05</a>. Pain has an owner and a tense. A representation of pain, in the sense the paper wants, has to mark something happening now and to me, rather than something that might happen, will happen, or is happening to someone else.</p>
+  <blockquote class="q">the representation must characterize pain as something happening now and &ldquo;to me,&rdquo; rather than merely information that something bad will happen, might happen, or is happening to someone else.<span class="cite">— The Pain Axis, <a href="https://arxiv.org/html/2609.16247v2#S1" target="_blank" rel="noopener">§1</a></span></blockquote>
+  <p>A footnote explains why the paper says "pain" and not "suffering". In everyday use, suffering is the broader state of distress, and the word arguably presupposes conscious experience. The authors pick one defined term so they do not slide between near-synonyms, and they say outright that whether models can suffer is outside the paper's scope. Keep that in mind on every page: "pain" here is a label for a functional role, not a claim about experience.</p>
+
+  <h2 id="neighbours">Pain and its neighbours</h2>
+  <p>The definition is useful because it predicts how a genuine pain direction should differ from the states most easily confused with it. The table is this map's summary of the contrasts the paper sets up across §1, §3.1 and §3.3.</p>
+  <div class="scroll"><table class="kv">
+    <tr><th>Neighbouring state</th><th>What it shares with pain</th><th>What it lacks</th><th>Where the paper tests it</th></tr>
+    <tr><td>Fear</td><td>Aversive, urgent</td><td>The harm has not happened yet; it is a threat</td><td>Control category; fear vector; shutdown threats in §4.1</td></tr>
+    <tr><td>Negative emotion (anger, disgust)</td><td>Negative valence</td><td>No injury or loss to the self</td><td>Control category; negative-emotion vector</td></tr>
+    <tr><td>Sadness</td><td>Low mood, often loss</td><td>No injury; the paper's closest neighbour</td><td>Standalone set; sadness vector in §4.4</td></tr>
+    <tr><td>Negative world state</td><td>Things going badly</td><td>Not happening to the self</td><td>Control category</td></tr>
+    <tr><td>Non-painful bodily sensation</td><td>Bodily focus</td><td>No unpleasantness</td><td>Control category</td></tr>
+    <tr><td>Numbness</td><td>An injury event</td><td>No pain felt</td><td>Standalone set in §3.3</td></tr>
+    <tr><td>Arousal</td><td>Intensity</td><td>Positive, not painful</td><td>Standalone set</td></tr>
+  </table></div>
+  <p>This is the paper's main design idea. Each control isolates one way a pain detector could be fooled. If the direction fired for fear, it would be a threat detector. If it fired for numb injuries, it would be an injury detector. If it fired for winning a race, it would be an intensity detector. The later pages are a series of checks of exactly these possibilities.</p>
+
+  <h2 id="why">Why anyone should care</h2>
+  <p>The introduction gives three reasons, and they pull in different directions (<a href="https://arxiv.org/html/2609.16247v2#S1" target="_blank" rel="noopener">§1</a>).</p>
+  <ol>
+    <li><b>Mechanism.</b> If there is a pain representation, it helps explain how models produce their fluent talk about negative experiences, and it might do work inside the model similar to what pain does in animals, such as learning to avoid certain outcomes.</li>
+    <li><b>Safety.</b> A pain-like state could help explain model behavior, and it could also change behavior in ways that are hard to see from the outside. <a class="lnk" href="p07-buttons.html">Part 07</a> is the paper's test of that second possibility.</li>
+    <li><b>Welfare.</b> In humans and animals, the capacity for pain is widely treated as enough for moral consideration. So evidence about pain-like states feeds directly into debates about AI moral standing. The authors flag the open question in that chain: whether moral standing needs phenomenal consciousness (felt experience), and what it would take for a pain-like state to be felt.</li>
+  </ol>
+
+  <h2 id="directions">Background 1: concepts as directions</h2>
+  <p>A few terms carry the whole paper, so here they are in plain words.</p>
+  <p>A transformer processes text as a sequence of tokens. At every layer, each token position holds a long vector of numbers, its <a class="lnk" href="../glossary.html#activation">activation</a>. The running sum that each layer reads from and adds to is called the <a class="lnk" href="../glossary.html#residual-stream">residual stream</a>: think of it as a shared scratchpad, one vector per token, that every attention and MLP block reads and writes. A recurring finding in interpretability is that many human concepts correspond to particular directions in that space, the <em>linear representation</em> idea. If "pain" is such a direction, you can measure how much of it a sentence carries by taking a dot product with the direction (a <a class="lnk" href="../glossary.html#projection">projection</a>). You can also push the model toward it by adding the direction into the residual stream while it generates, which is called <a class="lnk" href="../glossary.html#steering">activation steering</a>.</p>
+  <p>The paper cites the work it builds on (<a href="https://arxiv.org/html/2609.16247v2#S2" target="_blank" rel="noopener">§2</a>): directions for emotion concepts (Sofroniew et al., 2026) and persona traits (Chen et al., 2025), steering by adding activation differences (Turner et al., 2023; Rimsky et al., 2024), removing a direction to switch a behavior off (Arditi et al., 2024, who showed refusal runs through a single direction), and sparse autoencoders, which split activations into many labelled features (Lieberum et al., 2024). It also cites the known failure modes. Feature labels can describe the surrounding text rather than the state. A contrast between two groups of sentences can pick up whatever else differs between them (Tan et al., 2024). And claimed parallels with human brain signals can depend on how they are measured. <a class="lnk" href="p03-extracting.html">Part 03</a> shows how the method tries to guard against each.</p>
+
+  <h2 id="animals">Background 2: testing pain without asking</h2>
+  <p>A model's own report that it is or is not in pain is weak evidence either way. Chat models are trained to say they have no feelings, and a model could also say it hurts because the context makes that the likely next sentence. Animal researchers face a similar problem with subjects that cannot talk. They test for pain through behavior: whether an animal trades off a noxious stimulus against a reward (Appel and Elwood's hermit crabs), learns to avoid where it was hurt (Dunlop et al.'s goldfish and trout), or protects itself flexibly over time (Gibbons et al.'s bumblebees). The paper also cites the philosophy of pain, which disagrees on what pain fundamentally is: a felt quality, a perception of bodily damage, a representation of damage as bad, a command to protect the body, or something else (<a href="https://plato.stanford.edu/archives/spr2019/entries/pain/" target="_blank" rel="noopener">Aydede, SEP 2019</a>).</p>
+  <p>On the model side, the authors note that models have stable preferences between conversations (Ren et al., 2026; Ensign et al., 2025; Tagliabue and Dung, 2025; Wang et al., 2026), and that models can even self-administer steering vectors when users frustrate them (Black and Bloom, 2026). Their criticism of earlier behavioral designs drives the button experiment in <a class="lnk" href="p07-buttons.html">Part 07</a>: many lacked a matched non-emotional control or any cost for changing state. Without those, you cannot tell a model seeking relief from a model that simply prefers a tool or keeps repeating its last choice (Keeling et al., 2024).</p>
+  <blockquote class="q">To our knowledge, no study has isolated representations of pain specifically from representations of negative experience in general<span class="cite">— The Pain Axis, <a href="https://arxiv.org/html/2609.16247v2#S2" target="_blank" rel="noopener">§2</a></span></blockquote>
+
+  <h2 id="plan">The plan of the paper</h2>
+  <div class="flowrow">
+    <div class="f"><b>Build</b>Pain sentences and matched controls (§3.1) &rarr; <a class="lnk" href="p02-dataset.html">Part 02</a></div>
+    <div class="f"><b>Extract</b>One denoised direction per model, 25 models (§3.2) &rarr; <a class="lnk" href="p03-extracting.html">Part 03</a></div>
+    <div class="f"><b>Validate</b>Separation, numbness, vocabulary, geometry (§3.3) &rarr; <a class="lnk" href="p04-validation.html">Part 04</a></div>
+    <div class="f"><b>Test function</b>Self vs other (§4.1), steering (§4.2), costly choices (§4.3&ndash;4.4) &rarr; Parts <a class="lnk" href="p05-self-other.html">05</a>&ndash;<a class="lnk" href="p08-what-choices-track.html">08</a></div>
+  </div>
+  <p>The introduction states the conclusion it will reach in one line: a "pain axis" appears in every model tested, and in the behavioral task it drives action, which the authors read as harm avoidance being disrupted more than as an attempt to escape the state (<a href="https://arxiv.org/html/2609.16247v2#S1" target="_blank" rel="noopener">§1, "Our findings"</a>). The rest of the map checks how far the evidence carries that reading.</p>
+  <div class="callout">The question is narrow on purpose. It is not whether models feel pain. It is whether they carry a representation that matches a functional definition of pain (present, self-directed, aversive, disruptive) and that is distinct from fear, sadness and generic negativity. Every result in the paper should be read against that narrower question.</div>
+
+  <h2 id="check">Check yourself</h2>
+  <ol class="exercises">
+    <li>Why would a direction that fires equally for "I am being attacked" and "someone is about to attack me" fail the paper's definition?
+      <details><summary>Answer</summary><p>The definition requires pain to be present, not anticipated. A direction that cannot tell harm that has landed from harm that is threatened behaves like a threat (fear) detector. §1 asks for "something happening now"; the fear control and the shutdown-threat scenarios in §4.1 test exactly this.</p></details></li>
+    <li>Why do animal-pain researchers, and this paper, prefer costly choices over self-report?
+      <details><summary>Answer</summary><p>Reports can be produced without the state, and chat models are trained to deny having states at all. A choice that costs something reveals what the subject actually weighs. §2 adds that a good design also needs a matched non-emotional control, or a preference for one tool can pass for relief-seeking.</p></details></li>
+    <li>The paper's definition includes moral injury and cognitive pain. Why might those matter more for an LLM than for a person?
+      <details><summary>Answer</summary><p>§3.1 notes that models show robust aversion to failure, tedious tasks and tasks that conflict with values instilled by post-training (citing Ren et al., 2026). If a model has anything like pain, these non-bodily kinds are where you would expect it to show up.</p></details></li>
+  </ol>
+
+  <h2 id="further">Further reading, verified</h2>
+  <ul class="readings">
+    <li><a href="https://transformer-circuits.pub/2026/emotions/index.html" target="_blank" rel="noopener">Emotion concepts and their function in a large language model</a> — Sofroniew et al. (2026) · the emotion-direction work the paper extends to pain.</li>
+    <li><a href="https://arxiv.org/abs/2308.10248" target="_blank" rel="noopener">Steering language models with activation engineering</a> — Turner et al. (2023) · adding an activation difference to change behavior.</li>
+    <li><a href="https://arxiv.org/abs/2312.06681" target="_blank" rel="noopener">Steering Llama 2 via contrastive activation addition</a> — Rimsky et al. (2024) · mean-difference steering vectors, the paper's other steering reference.</li>
+    <li><a href="https://arxiv.org/abs/2406.11717" target="_blank" rel="noopener">Refusal in language models is mediated by a single direction</a> — Arditi et al. (2024) · the ablation method used in the appendix.</li>
+    <li><a href="https://arxiv.org/abs/2507.21509" target="_blank" rel="noopener">Persona vectors</a> — Chen et al. (2025) · character traits as residual-stream directions.</li>
+    <li><a href="https://arxiv.org/abs/2411.02432" target="_blank" rel="noopener">Can LLMs make trade-offs involving stipulated pain and pleasure states?</a> — Keeling et al. (2024) · the behavioral precedent the paper builds past.</li>
+    <li><a href="https://www.lesswrong.com/posts/cNDJuXNZ8MrkPZNzj/machinic-psychopharmacology-do-llms-self-medicate-3" target="_blank" rel="noopener">Machinic psychopharmacology: do LLMs self-medicate?</a> — Black and Bloom (2026) · the self-administration paradigm the button task adapts.</li>
+    <li><a href="https://plato.stanford.edu/archives/spr2019/entries/pain/" target="_blank" rel="noopener">Pain</a> — Aydede, Stanford Encyclopedia of Philosophy (2019) · the theories of pain the paper surveys.</li>
+    <li><a href="https://arxiv.org/abs/2411.00986" target="_blank" rel="noopener">Taking AI welfare seriously</a> — Long et al. (2024) · why AI welfare is a live question (field map extra).</li>
+  </ul>
+
+  <div class="callout">Next: <a class="lnk" href="p02-dataset.html">The dataset: five pains and their near misses</a> &middot; Back to the <a class="lnk" href="../index.html#question">map</a>.</div>
+</main>
+<footer>Original explanation of The Pain Axis (arXiv:2609.16247v2), Tagliabue, Dung and Berg. The paper is &copy; its authors; this page links and explains, it does not copy. Part of <a href="https://idvorkin-ai-tools.github.io/">the field maps</a>.</footer>
+</body>
+</html>

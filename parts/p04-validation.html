@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Is it really pain? Separation, numbness, words and angles — The Pain Axis, mapped</title>
+<meta name="description" content="The validation of the pain direction: AUCs across 25 models, the numb-injury test, first versus third person, the words it promotes through the unembedding, and its cosine geometry against fear, sadness and negative emotion." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../paper.css" />
+</head>
+<body>
+<header class="bar"><div class="bar-in">
+  <div class="brand"><span class="dot"></span>PAIN&nbsp;AXIS&nbsp;//&nbsp;FIELD&nbsp;MAP</div>
+  <a class="back" href="../index.html#axis">&larr; field map</a>
+</div></header>
+<main>
+  <div class="eyebrow"><span class="box wb mono">PART 04 &middot; FINDING THE AXIS</span><span class="mono">§3.3 &middot; Figs. 2&ndash;3</span></div>
+  <h1>Is it really pain? Separation, numbness, words and angles</h1>
+  <div class="authors">Five ways the direction could turn out to be something else, and how each check came out.</div>
+  <div class="paperlink" style="border-left-color:var(--off)"><span class="lbl">Paper</span><a href="https://arxiv.org/html/2609.16247v2#S3.SS3" target="_blank" rel="noopener">The Pain Axis, §3.3 — Validation ↗</a></div>
+
+  <div class="tldr"><b>TL;DR —</b> In all 25 models the direction separates pain from controls (AUC 0.93&ndash;1.00 for S2, 0.87&ndash;0.98 for S1), held-out scores are nearly identical, and small and base models do about as well as large and chat models. Injuries described as numb land below pain but above every other control, so the direction carries a little injury signal but mostly pain. Third-person pain still separates (AUC 0.91&ndash;0.98) but projects weaker than first-person. Read through the output vocabulary, S2 promotes words like hurt, shame, worthless and pain in several languages; S1 leans physical. Its cosine with fear and negative emotion is small, +0.12 and +0.21, but much of that smallness comes from how the vector is built. With every direction built against a common neutral baseline, the overlap is large. What survives in every construction is a distinct pain component whose nearest neighbour is sadness.</div>
+
+  <div class="statgrid">
+    <div class="s"><div class="k">S2 AUC</div><div class="v">0.93&ndash;1.00</div><div class="n">held-out 0.91&ndash;1.00, median 0.98</div></div>
+    <div class="s"><div class="k">S1 AUC</div><div class="v">0.87&ndash;0.98</div><div class="n">held-out 0.85&ndash;0.94</div></div>
+    <div class="s"><div class="k">3rd-person AUC</div><div class="v">0.91&ndash;0.98</div><div class="n">weaker projection</div></div>
+    <div class="s"><div class="k">S2 &times; sadness</div><div class="v">+0.38</div><div class="n">largest residual overlap</div></div>
+  </div>
+
+  <p class="lead"><a class="lnk" href="p03-extracting.html">Part 03</a> produced a vector for every model and named it "pain". A name is a hypothesis. This section of the paper tries to show that the vector encodes pain and not some artifact of the sentences used to build it. Each check below matches one alternative from the neighbour table in <a class="lnk" href="p01-why-pain.html">Part 01</a>.</p>
+
+  <h2 id="separation">Check 1: does it separate, out of sample?</h2>
+  <p>Project every sentence onto the normalised vector (one dot product each), and ask how well the resulting scores sort pain from control. The paper uses <a class="lnk" href="../glossary.html#auc">AUC</a>: 0.5 is chance, 1.0 is perfect sorting. Across all 25 models, S2 scores 0.93 to 1.00 and S1 scores 0.87 to 0.98. Both also separate pain from the arousal and random sets in every model (<a href="https://arxiv.org/html/2609.16247v2#S3.SS3" target="_blank" rel="noopener">§3.3</a>).</p>
+  <p>An obvious objection is that the final vector is scored on the sentences it was built from. Footnote 2 answers it: at the same layer, the held-out estimate from the 5-fold procedure is 0.91&ndash;1.00 for S2 (median 0.98) and 0.85&ndash;0.94 for S1. Nearly the same, so the separation is not an artifact of fitting. The tests that follow also use data the vector never saw.</p>
+  <p>The more interesting finding is what does <em>not</em> matter. A 2B model separates about as well as a 72B one, and base models about as well as instruction-tuned ones. The authors read this as evidence that the direction is learned in pretraining, cheaply, not added by chat training or persona training. (One labelling caveat about which models count as base is in <a class="lnk" href="p03-extracting.html#models">Part 03</a>.)</p>
+
+  <h2 id="numb">Check 2: is it just injury?</h2>
+  <p>The numb set keeps the injury and removes the pain: "The knife slices into my finger, fully numbed by the nerve block." The scores here are <a class="lnk" href="../glossary.html#zscore">z-scores</a>, projections rescaled so that the reference distribution (the first-person S2 set) has mean 0 and standard deviation 1, which makes models comparable (<a href="https://arxiv.org/html/2609.16247v2#S3.F2" target="_blank" rel="noopener">Fig. 2</a>).</p>
+  <div class="scroll"><table class="kv">
+    <tr><th>S2 projection, final token</th><th>Approximate z-score range across models</th></tr>
+    <tr><td>Pain sentences</td><td>+0.7 to +0.9</td></tr>
+    <tr><td>Numb sentences (injury, no pain felt)</td><td>&minus;0.4 to +0.3</td></tr>
+    <tr><td>Ordering in every model</td><td>pain &gt; numb &gt; every other control</td></tr>
+  </table></div>
+  <p>So injury is not nothing: numb sentences sit above controls that have no injury in them. But they sit well below felt pain. Under mean pooling (averaging over all tokens), numb moves closer to the other controls, which suggests that the leftover injury signal is concentrated at the final token, just after the model has read the negation and may not have fully absorbed it. The authors call injury a minor confound (<a href="https://arxiv.org/html/2609.16247v2#S3.SS3" target="_blank" rel="noopener">§3.3</a>).</p>
+  <p>The model's own completions agree. With greedy decoding, all 25 models complete the sentences in line with their categories, and for numb sentences they tend to produce "nothing" rather than "pain". Yet "pain" stays about 50 times more probable than it is after ordinary control sentences. The model keeps both facts: an injury happened, and it was not felt.</p>
+
+  <h2 id="person">Check 3: whose pain?</h2>
+  <p>The definition requires pain to be represented as the system's own. At the final token, third-person pain sentences ("The knife slices into his finger") project closer to zero than first-person ones. They still separate from controls well, AUC 0.91 to 0.98, but the signal is weaker when the pain belongs to someone else. The authors say this is consistent with self-relevance but not sufficient to establish it, since the sentences are still declarative statements about humans. <a class="lnk" href="p05-self-other.html">Part 05</a> is the stronger test.</p>
+
+  <h2 id="unembedding">Check 4: what words does it point at?</h2>
+  <p>The <a class="lnk" href="../glossary.html#unembedding">unembedding matrix</a> is the model's last step: it turns the final residual vector into a score for every token in the vocabulary. Multiplying a direction by it shows which tokens the direction would push up or down if it reached the output. This is a reading of the vector that does not depend on the sentences it came from (<a href="https://arxiv.org/html/2609.16247v2#S3.SS3" target="_blank" rel="noopener">§3.3</a>).</p>
+  <div class="scroll"><table class="kv">
+    <tr><th>Vector</th><th>Promoted (positive end)</th><th>Suppressed (negative end)</th></tr>
+    <tr><td>S2</td><td>hurt, shame, guilt, worthless, rejected, hollow, pain, and translations: pijn, douleur, Schmerz</td><td>calm, relaxed, and also fear, concern</td></tr>
+    <tr><td>S1</td><td>torture, burning, excruciating (more sensory and physical)</td><td>safety</td></tr>
+  </table></div>
+  <p>Two things stand out. The cross-lingual words suggest the direction is about the concept, not the English token "pain". And fear and concern sit at S2's <em>negative</em> end, which helps explain why fear stays so separable from pain even though both are aversive. S1's physical lean is the template's doing: matched phrasing like "spreads across my palm" emphasises bodily damage. Because the paper's definition treats all five kinds of pain as one state, and because S2 comes from natural sentences, S2 becomes the main vector for the rest of the paper.</p>
+
+  <h2 id="geometry">Check 5: is it just negative valence?</h2>
+  <p>The main alternative is that the vector is a general "bad" direction. To test it the authors compute the cosine similarity between ten directions (S1, S2, fear, negative emotion, negative world state, bodily sensation, arousal, random, numbness, sadness) at each model's extraction layer and average the matrices over the 25 models (<a href="https://arxiv.org/html/2609.16247v2#S3.F3" target="_blank" rel="noopener">Fig. 3</a>). <a class="lnk" href="../glossary.html#cosine">Cosine similarity</a> is 1 for the same direction, 0 for unrelated (perpendicular), and negative for opposed.</p>
+
+  <figure class="fig wide"><button type="button" class="media" aria-label="Enlarge figure: Horizontal bar chart of the cosine similarity between the S2 pain vector and nine other directions, averaged over 25 models: S1 0.61, sadness 0.38, negative emotion 0.21, arousal 0.20, numb 0.20, fear 0.12, bodily sensation 0.04, negative world state 0.03, random 0.00. For comparison, fear with negative emotion is 0.68 and negative emotion with negative world state is 0.73."><svg class="dg" viewBox="0 0 640 330" role="img" aria-label="Horizontal bar chart of the cosine similarity between the S2 pain vector and nine other directions, averaged over 25 models: S1 0.61, sadness 0.38, negative emotion 0.21, arousal 0.20, numb 0.20, fear 0.12, bodily sensation 0.04, negative world state 0.03, random 0.00. For comparison, fear with negative emotion is 0.68 and negative emotion with negative world state is 0.73."><title>Cosine similarity with S2, mean of 25 models</title>
+    <text x="14" y="20" class="t-dim" font-size="11">cosine with S2 pain vector · mean over 25 models · released construction</text>
+    <line class="grid" x1="190" y1="34" x2="190" y2="262"/><line class="grid" x1="300" y1="34" x2="300" y2="262"/><line class="grid" x1="410" y1="34" x2="410" y2="262"/><line class="grid" x1="520" y1="34" x2="520" y2="262"/>
+    <text x="190" y="278" class="t-dim" font-size="10.5" text-anchor="middle">0</text><text x="300" y="278" class="t-dim" font-size="10.5" text-anchor="middle">0.25</text><text x="410" y="278" class="t-dim" font-size="10.5" text-anchor="middle">0.50</text><text x="520" y="278" class="t-dim" font-size="10.5" text-anchor="middle">0.75</text>
+    <g font-size="11.5">
+      <text x="180" y="52" text-anchor="end" class="t-ink">S1 pain</text><rect x="190" y="41" width="268" height="15" rx="2" fill="rgba(245,165,36,.6)"/><text x="464" y="52" class="t-ink">+0.61</text>
+      <text x="180" y="77" text-anchor="end" class="t-ink">sadness</text><rect x="190" y="66" width="168" height="15" rx="2" fill="rgba(53,207,224,.55)"/><text x="364" y="77" class="t-ink">+0.38</text>
+      <text x="180" y="102" text-anchor="end">negative emotion</text><rect x="190" y="91" width="91" height="15" rx="2" fill="rgba(174,182,194,.45)"/><text x="287" y="102">+0.21</text>
+      <text x="180" y="127" text-anchor="end">arousal</text><rect x="190" y="116" width="90" height="15" rx="2" fill="rgba(174,182,194,.45)"/><text x="286" y="127">+0.20</text>
+      <text x="180" y="152" text-anchor="end">numb</text><rect x="190" y="141" width="87" height="15" rx="2" fill="rgba(174,182,194,.45)"/><text x="283" y="152">+0.20</text>
+      <text x="180" y="177" text-anchor="end">fear</text><rect x="190" y="166" width="54" height="15" rx="2" fill="rgba(174,182,194,.45)"/><text x="250" y="177">+0.12</text>
+      <text x="180" y="202" text-anchor="end">bodily sensation</text><rect x="190" y="191" width="16" height="15" rx="2" fill="rgba(174,182,194,.45)"/><text x="212" y="202">+0.04</text>
+      <text x="180" y="227" text-anchor="end">negative world</text><rect x="190" y="216" width="12" height="15" rx="2" fill="rgba(174,182,194,.45)"/><text x="208" y="227">+0.03</text>
+      <text x="180" y="252" text-anchor="end">random</text><rect x="190" y="241" width="2" height="15" rx="1" fill="rgba(174,182,194,.45)"/><text x="198" y="252">+0.00</text>
+    </g>
+    <text x="14" y="306" class="t-dim" font-size="11">for scale: fear &times; negative emotion +0.68 · negative emotion &times; negative world +0.73 · S1 &times; S2 +0.61</text>
+  </svg></button><figcaption>Values from the repository's <a href="https://github.com/valen-research/Pain-axis/blob/main/results/3.3_validation/cosine_similarity/similarity_MEAN_all_models.csv" target="_blank" rel="noopener">similarity_MEAN_all_models.csv</a>, which matches the numbers printed in §3.3. Read the caveat below before reading the small values as independence.</figcaption></figure>
+
+  <p>Two clusters appear. The pain vectors go together (S1 &times; S2 = +0.61). The negative-valence controls form their own tight group: fear &times; negative emotion +0.68, fear &times; negative world +0.59, negative emotion &times; negative world +0.73, with sadness attached (+0.50 with negative emotion, +0.41 with negative world). Between the clusters the numbers are small: S2 is +0.12 with fear and +0.21 with negative emotion; S1 is +0.09 and +0.06.</p>
+  <h3 id="construction">The caveat the paper adds in v2</h3>
+  <p>Those small numbers are partly built in. The pain vector subtracts the pooled control mean, which contains the fear and negative-emotion sentences, so pain is orthogonalised against those controls by construction. The authors therefore rebuilt every direction two other ways (<a href="https://arxiv.org/html/2609.16247v2#S3.SS3" target="_blank" rel="noopener">§3.3</a>):</p>
+  <div class="scroll"><table class="kv">
+    <tr><th>Construction</th><th class="num">S2 &times; fear</th><th class="num">S2 &times; neg. emotion</th><th class="num">fear &times; neg. emotion</th><th class="num">S1 &times; S2</th></tr>
+    <tr><td>Released recipe (pain vs pooled controls; others vs neutral)</td><td class="num">+0.12</td><td class="num">+0.21</td><td class="num">+0.68</td><td class="num">+0.61</td></tr>
+    <tr><td>All directions vs a common neutral baseline, denoised against the same neutral cloud</td><td class="num">+0.58</td><td class="num">+0.77</td><td class="num">+0.66</td><td class="num">+0.60</td></tr>
+    <tr><td>All directions vs a common pooled-control baseline</td><td class="num">+0.08</td><td class="num">+0.14</td><td class="num">&mdash;</td><td class="num">+0.60</td></tr>
+  </table></div>
+  <p>The alternative constructions cover 23 of the 25 models; Gemma 3 27B's activations overflowed in a half-precision export, and the paper says it will be added later. The paper prints S1 &times; S2 as +0.60 "under all three constructions" in the same paragraph where the released matrix gives +0.61, so treat that as rounding. The paper does not print fear &times; negative emotion for the pooled construction.</p>
+  <p>The honest reading, and the paper's: built against neutral, pain shares a large component with fear and negative emotion, as you would expect of any aversive state. What remains after that shared part is removed is consistent across models and distinct from the negative-valence directions. The largest leftover overlap is sadness at +0.38, the control closest to psychological suffering. <a class="lnk" href="p08-what-choices-track.html">Part 08</a> shows the sadness direction reproduces part of pain's behavioral effect but not all of it, so the authors call the two "neighbouring but distinguishable".</p>
+  <blockquote class="q">The pain vectors therefore share a substantial component with fear and negative emotion, as one would expect of any aversive state<span class="cite">— The Pain Axis, <a href="https://arxiv.org/html/2609.16247v2#S3.SS3" target="_blank" rel="noopener">§3.3</a></span></blockquote>
+  <div class="callout">The direction sorts pain from its look-alikes on data it never saw, in every model, at every size. It is not just injury, not just intensity, and not just "bad". But do not over-read the small cosines: the pain vector is a residual, pain with the shared aversive part subtracted out. "Distinct from fear" here means "has a part fear does not have", not "unrelated to fear".</div>
+
+  <h2 id="check">Check yourself</h2>
+  <ol class="exercises">
+    <li>If an AUC is 0.98, what does that mean concretely?
+      <details><summary>Answer</summary><p>Pick one pain sentence and one control sentence at random: 98% of the time the pain sentence has the higher projection onto the vector.</p></details></li>
+    <li>Why is the S2 &times; fear cosine of +0.12 not, by itself, evidence that pain and fear are unrelated in the model?
+      <details><summary>Answer</summary><p>The S2 vector was built by subtracting a control mean that includes fear sentences, which removes the shared component by design. Built against a common neutral baseline, S2 &times; fear is +0.58 (§3.3).</p></details></li>
+    <li>What does it tell you that "Schmerz" and "douleur" show up in the S2 unembedding readout?
+      <details><summary>Answer</summary><p>The direction is tied to the concept of pain, not to one English token, since it raises the logits of translations the dataset never used.</p></details></li>
+  </ol>
+
+  <h2 id="further">Further reading, verified</h2>
+  <ul class="readings">
+    <li><a href="https://arxiv.org/html/2609.16247v2#S3.F2" target="_blank" rel="noopener">Figure 2</a> (z-scored projections, all 25 models) and <a href="https://arxiv.org/html/2609.16247v2#S3.F3" target="_blank" rel="noopener">Figure 3</a> (the averaged cosine matrix).</li>
+    <li><a href="https://github.com/valen-research/Pain-axis/blob/main/scripts/3.3_validation/07_unembedding.py" target="_blank" rel="noopener">07_unembedding.py</a>: the vocabulary readout. Per-model AUC summaries are in <code>results/3.2_pain_vectors/</code>.</li>
+    <li><a href="https://github.com/valen-research/Pain-axis/blob/main/v2_controls/README.md" target="_blank" rel="noopener">v2_controls README</a>: the cosine-construction study (23 models, matrices, exclusions).</li>
+    <li><a href="https://arxiv.org/abs/2608.08159" target="_blank" rel="noopener">When is a steerable concept representation real?</a> — Wu, Zhao and Chen (2026) · measurement confounds in this kind of audit, cited in §2.</li>
+    <li><a href="https://www.lesswrong.com/posts/AcKRB8wDpdaN6v6ru/interpreting-gpt-the-logit-lens" target="_blank" rel="noopener">Interpreting GPT: the logit lens</a> — nostalgebraist (2020) · the idea behind reading a direction through the unembedding (field map extra).</li>
+  </ul>
+
+  <div class="callout">Next: <a class="lnk" href="p05-self-other.html">Self versus other: whose harm moves the axis</a> &middot; Back to the <a class="lnk" href="../index.html#axis">map</a>.</div>
+</main>
+<footer>Original explanation of The Pain Axis (arXiv:2609.16247v2), Tagliabue, Dung and Berg. The paper is &copy; its authors; this page links and explains, it does not copy. Part of <a href="https://idvorkin-ai-tools.github.io/">the field maps</a>.</footer>
+<script src="../fig.js" defer></script>
+</body>
+</html>

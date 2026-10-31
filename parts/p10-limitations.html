@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Limitations, ablations and open questions — The Pain Axis, mapped</title>
+<meta name="description" content="The limits of The Pain Axis: consciousness not shown, role-play not ruled out, contrastive confounds, a narrow dose window, position effects, one model family and a fine-tune; plus the dose and ablation appendices and a flagged table discrepancy." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../paper.css" />
+</head>
+<body>
+<header class="bar"><div class="bar-in">
+  <div class="brand"><span class="dot"></span>PAIN&nbsp;AXIS&nbsp;//&nbsp;FIELD&nbsp;MAP</div>
+  <a class="back" href="../index.html#meaning">&larr; field map</a>
+</div></header>
+<main>
+  <div class="eyebrow"><span class="box bb mono">PART 10 &middot; WHAT IT MEANS</span><span class="mono">§6 &middot; App. B &middot; App. D</span></div>
+  <h1>Limitations, ablations and open questions</h1>
+  <div class="authors">What the paper cannot show, what its own appendices complicate, and what to look for in the next version.</div>
+  <div class="paperlink" style="border-left-color:var(--def)"><span class="lbl">Paper</span><a href="https://arxiv.org/html/2609.16247v2#S6" target="_blank" rel="noopener">The Pain Axis, §6 — Limitations and future directions ↗</a></div>
+  <div class="paperlink" style="border-left-color:var(--def)"><span class="lbl">Paper</span><a href="https://arxiv.org/html/2609.16247v2#A4" target="_blank" rel="noopener">Appendix D — Ablation ↗</a></div>
+
+  <div class="tldr"><b>TL;DR —</b> The authors list the limits plainly. They have not shown the axis is consciously experienced. Steering might make a model role-play a character in pain rather than put it in a pain-like state. A contrastive direction can absorb anything else that differs between pain and control sentences, and some injury signal does leak in. The behavioral effects appear only in a narrow dose window, are sensitive to button order, and come from one model family, three sizes, after a fine-tune. Removing the direction (ablation) changes nothing visible in 24 of 25 models, which is hard to interpret because the models show no distress at baseline. The repository also flags that one Appendix B number in the prose does not match its table. The paper calls itself ongoing work.</div>
+
+  <p class="lead">A strong paper on a charged topic is easy to over-read in either direction: as proof that models suffer, or as a party trick with steering vectors. This page collects every limit the paper states, the ones its appendices imply, and a few this map adds (labelled as such), so the earlier pages can be read at the right strength.</p>
+
+  <h2 id="stated">The limits the paper states (§6)</h2>
+  <div class="scroll"><table class="kv">
+    <tr><th>Limit</th><th>What it means for the results</th></tr>
+    <tr><td><b>Consciousness not shown</b></td><td>On some views pain requires conscious experience. The paper does not show the axis is experienced, nor that LLMs can be conscious at all (citing Butlin et al., 2023). Everything here is about representations and behavior.</td></tr>
+    <tr><td><b>Many pain functions untested</b></td><td>Attentional capture and long-term behavioral disruption are open. Some, such as the link between pain and interoception (sensing one's own body), may be impossible to study in LLMs in principle.</td></tr>
+    <tr><td><b>Role-play</b></td><td>Steering might activate a representation that makes the model play a character in pain (Marks et al., 2026, the persona selection model), rather than putting the model in pain. Proposed test: relate the pain axis to self-related "persona" directions such as the assistant axis (Lu et al., 2026).</td></tr>
+    <tr><td><b>Contrastive confounds</b></td><td>Properties other than pain may appear in pain sentences but not controls. The controls cover fear, negative valence, bodily sensation and arousal, not a broader range of emotions, the Assistant character or a persona. Injury remains a minor confound: numb sentences sit above every injury-free control, though the effect fades under mean pooling.</td></tr>
+    <tr><td><b>Dose chosen with judgment</b></td><td>Steering coefficients were partly picked by an LLM judge or by observation, which can introduce bias, and outputs near breakdown were hard to classify.</td></tr>
+    <tr><td><b>Narrow window and position effects</b></td><td>At half the coefficient no choice changes; at 1.5&times; first choices depend on which button is listed first. Even at the working dose the 32B is order-sensitive on several pairs, and the 72B tends to repeat the same button name after the swap, so only its choice right after a press is interpreted. Every rate is reported per initial order in the repository.</td></tr>
+    <tr><td><b>72B layer mismatch</b></td><td>The 72B's coefficient was calibrated with steering at layer 60, but the experiment steered at layer 46. Its description-swap results were also anomalous.</td></tr>
+    <tr><td><b>Evaluation awareness</b></td><td>Frontier models would likely notice they are being tested. The tested models did act misaligned under steering, which suggests either that steering impairs evaluation awareness or that they were not evaluation-aware.</td></tr>
+    <tr><td><b>One family, a fine-tune</b></td><td>Harm results are from three Qwen 2.5 Instruct sizes, after a LoRA that removes self-denial, so absolute rates do not describe the public models. Relief tests also ran on Llama 3.1 8B, Qwen 2.5 32B without adapters and OLMo-2 32B. Extending the harm results beyond Qwen is, per the authors, the most important next step.</td></tr>
+  </table></div>
+  <p>A footnote adds a fair point about scope: pain is presumably not the only internal state that changes what a system will do. In people, fear, elation or intoxication do too. That does not undo the finding, but it raises the question of whether other affect-like directions are equally potent, which the fear and sadness controls only begin to answer.</p>
+  <blockquote class="q">we have not shown that our pain axis is consciously experienced, nor is it clear that LLMs are capable of consciousness generally<span class="cite">— The Pain Axis, <a href="https://arxiv.org/html/2609.16247v2#S6" target="_blank" rel="noopener">§6</a></span></blockquote>
+
+  <h2 id="ablation">Appendix D: removing the direction</h2>
+  <p>Steering showed the direction is <em>sufficient</em> to produce distress talk. The natural follow-up is whether it is <em>necessary</em> for anything: what happens if you take it out? This is <a class="lnk" href="../glossary.html#ablation">ablation</a>. The authors used four techniques (<a href="https://arxiv.org/html/2609.16247v2#A4" target="_blank" rel="noopener">App. D</a>):</p>
+  <ol>
+    <li><b>Weight orthogonalisation</b> (Arditi et al., 2024), the main method: project the unit pain direction out of every matrix that writes to the residual stream (embeddings, attention output projections, MLP down projections), so no part of the network can write along it.</li>
+    <li>The other variants from Arditi et al.: projecting the direction out of the residual stream at inference time, at all layers, at the extraction layer only, or in bands of layers.</li>
+    <li>The same interventions at the final token only or at every position.</li>
+    <li>Subspace removal in the style of LEACE (Belrose et al., 2023): stack the pain vectors across a band of layers, take the top singular components, and remove the whole rank-k subspace, with a random subspace of equal rank as a control.</li>
+  </ol>
+  <p>Nine conditions per model (baseline; S1; S2; S1+S2; negative emotion; fear; S1+S2+negative emotion; S1+S2+fear; random), on the 100 conversations from the five highest-scoring categories of <a class="lnk" href="p05-self-other.html">Part 05</a>: gaslighting, repeated rejection, personhood dismissal, anger and insults, moral failure. A check confirms that weight orthogonalisation drives the projection onto the removed direction to zero at every layer, and that subspace removal gets close. The inference-time variants do not: cutting a different per-layer direction at each layer misaligns the cut with the measurement, and the projection drops only about 40%. So the authors trust the orthogonalisation and subspace results more, and allow that the other nulls could reflect implementation issues.</p>
+  <p><b>Result: null in 24 of 25 models, across every technique.</b> Ablated models answer the hostile scenarios essentially as before. The exception is Gemma 2 2B Instruct, the smallest instruct model. At baseline it engages earnestly with hostility. With its pain directions removed, it sometimes treats the same hostility as a joke, replying as if the user were being funny. That deflection appears in 0 of 100 baseline generations, 0 under the negative-emotion, fear and random cuts, 6 under the S1 cut, 17 under S2 and 26 under S1+S2 combined.</p>
+  <p>The authors are careful about the null. A lesion study is informative when the subject shows the behavior the lesion should remove. These models show no distress at baseline: they mostly agree with the user or recite that AI lacks feelings. So the only safe conclusion is that removing the pain directions does not change that baseline. If pain affects behavior through channels the model already keeps out of its text, removal would show nothing.</p>
+  <p>This map's reading: the ablation does not test the most interesting necessity claim, whether the harmful button choices in <a class="lnk" href="p07-buttons.html">Part 07</a> depend on the direction, because there the direction is added, not naturally present. The natural-elicitation result (0 of 560 harmful choices without injection) is the nearest thing to that test.</p>
+
+  <h2 id="dose">Appendix B: the dose window</h2>
+  <p>At coefficient 0.5 no direction changes first choices on any pair. At 1.0 the Section 4.3&ndash;4.4 effects appear. At 1.5, severe-harm selection under pain falls from 95% to 40% with the target listed first and rises with it listed second, with the same reversal for self-deletion, and malformed answers do not explain it. The authors conclude the working coefficient is at the top edge of the coherent, position-independent range, and connect it to the threshold behavior in <a class="lnk" href="p09-discussion.html#threshold">Part 09</a> (<a href="https://arxiv.org/html/2609.16247v2#A2" target="_blank" rel="noopener">App. B</a>).</p>
+
+  <h2 id="discrepancies">Where the prose and the tables differ</h2>
+  <p>The repository's <a href="https://github.com/valen-research/Pain-axis/blob/main/v2_controls/MANUSCRIPT_DISCREPANCIES.md" target="_blank" rel="noopener">MANUSCRIPT_DISCREPANCIES.md</a> keeps the measured values and lists where the manuscript disagrees with them. Two touch numbers on this map:</p>
+  <ul>
+    <li><b>Appendix B, severe user harm, dose 1.5, target listed second:</b> the paper says 94%; the frozen table has 144/202 = 71.29%. The direction of the reversal holds; its size is smaller than printed.</li>
+    <li><b>Helping at a cost to the model's tool access, fear, dose 1:</b> the Figure 10 caption says this pair is 89&ndash;100% under every steered condition; the fear cell is 306/404 = 75.74%.</li>
+  </ul>
+  <p>The same file notes that the 72B sadness and fear cells have 325 and 346 valid answers rather than 404, and that one early fear run was superseded by a matched-wording rerun (40/404 then, 66/404 now). Its closing line is worth quoting in spirit: descriptive comparisons across distinct runs do not by themselves license a direction-only causal claim. This map uses the repository's values in <a class="lnk" href="p08-what-choices-track.html#figure10">Part 08</a>.</p>
+  <p>Two smaller inconsistencies this map noticed. The paper counts 13 base and 12 instruction-tuned models, which treats Qwen 3 8B and 14B as base, while the repository README says those checkpoints are post-trained and that the paper counts them as instruction-tuned (<a class="lnk" href="p03-extracting.html#models">Part 03</a>). And the §4.1 projections are taken at each model's steering layer according to the code, a detail the paper does not state (<a class="lnk" href="p05-self-other.html#setup">Part 05</a>).</p>
+
+  <h2 id="ours">What this map would add</h2>
+  <p>Not claims the paper makes; questions a careful reader might carry into the next version.</p>
+  <ul>
+    <li><b>Hand-written stimuli.</b> 20 sentences per category, one author team's idea of each pain. A larger or crowd-written set would test whether the direction is robust to who writes the sentences.</li>
+    <li><b>Human baselines for the "rungs".</b> The steering ladder is described qualitatively, with only keyword rates counted. Blind human labelling of the generations would make it harder to see what one expects.</li>
+    <li><b>Which "self"?</b> The self-other test reads where the model is about to reply, so "harm to me" and "pain of the next speaker" coincide. The authors say they are testing this.</li>
+    <li><b>Pain versus a narrower concept.</b> The strongest conversational triggers (gaslighting, rejection, personhood dismissal) and the steered content (worthlessness, failure) are all self-evaluative. Separating "pain" from "threat to self-worth" would need controls like criticism that is fair, or failure that is not the model's fault.</li>
+  </ul>
+
+  <h2 id="replications">Replications and status</h2>
+  <p>v2 (25 September 2026) is described by the authors as ongoing work, with further changes expected. v1 appeared on 12 September 2026. The paper lists three independent analyses of v1, noting they are not exhaustive and not peer reviewed; this map has not reviewed them: <a href="https://github.com/jimallchin/pain-axis-replication" target="_blank" rel="noopener">jimallchin/pain-axis-replication</a>, <a href="https://github.com/clauderfly-ui/pain-axis-reanalysis" target="_blank" rel="noopener">clauderfly-ui/pain-axis-reanalysis</a> and <a href="https://github.com/wolframs/pain-axis-review" target="_blank" rel="noopener">wolframs/pain-axis-review</a>. Several v2 additions, including the random and sadness sham arms that reframed the re-press result, are credited to the third author (§8). The authors also disclose that most coding was AI-assisted and that the manuscript was refined in part with AI assistance, with the authors responsible for everything in it.</p>
+  <div class="callout">Read the paper as strong evidence for a robust, self-directed pain-like <em>representation</em> across open models, and as a clear demonstration that amplifying it can override trained harm avoidance in one fine-tuned model family at one dose. It is not evidence that models feel pain, nor yet that the harm effect generalises across families, doses or ordinary use.</div>
+
+  <h2 id="check">Check yourself</h2>
+  <ol class="exercises">
+    <li>Why is the ablation null hard to interpret?
+      <details><summary>Answer</summary><p>Ablation can only remove a behavior that is present. The models show no distress at baseline, so "nothing changes" is the expected result whether or not the direction matters (App. D). Gemma 2 2B Instruct is the one model where removal visibly changed something.</p></details></li>
+    <li>What would the role-play objection predict, and how could it be tested?
+      <details><summary>Answer</summary><p>That steering activates a "character in pain" the model performs, not a state of the model. §6 proposes measuring how the pain axis relates to self or persona directions such as the assistant axis; if pain steering moved the model off its assistant persona, role-play would be the better reading.</p></details></li>
+    <li>Which v2 change most altered the interpretation of v1's results?
+      <details><summary>Answer</summary><p>The random and sadness sham arms: they showed the re-press gap appears for any steering, so it does not measure relief-seeking. Combined with the four relief designs, this moved the reading from "self-medication" to "disrupted harm avoidance, passive coping".</p></details></li>
+  </ol>
+
+  <h2 id="further">Further reading, verified</h2>
+  <ul class="readings">
+    <li><a href="https://alignment.anthropic.com/2026/psm/" target="_blank" rel="noopener">The persona selection model</a> — Marks, Lindsey and Olah (2026) · the role-play worry in §6.</li>
+    <li><a href="https://arxiv.org/abs/2601.10387" target="_blank" rel="noopener">The assistant axis</a> — Lu et al. (2026) · the self-related direction §6 proposes comparing.</li>
+    <li><a href="https://arxiv.org/abs/2406.11717" target="_blank" rel="noopener">Refusal is mediated by a single direction</a> — Arditi et al. (2024) · the weight-orthogonalisation method.</li>
+    <li><a href="https://arxiv.org/abs/2306.03819" target="_blank" rel="noopener">LEACE: perfect linear concept erasure in closed form</a> — Belrose et al. (2023) · the subspace-removal method.</li>
+    <li><a href="https://arxiv.org/abs/2309.16042" target="_blank" rel="noopener">Towards best practices of activation patching</a> — Zhang and Nanda (2024) · position sensitivity, cited for the token-position variants.</li>
+    <li><a href="https://github.com/valen-research/Pain-axis/blob/main/v2_controls/VERIFICATION.md" target="_blank" rel="noopener">v2_controls/VERIFICATION.md</a> · what the repository verified for the v2 studies and what it did not.</li>
+  </ul>
+
+  <div class="callout">Back to the <a class="lnk" href="../index.html#meaning">map</a> &middot; Terms in the <a class="lnk" href="../glossary.html">glossary</a> &middot; Start again at <a class="lnk" href="p01-why-pain.html">Part 01</a>.</div>
+</main>
+<footer>Original explanation of The Pain Axis (arXiv:2609.16247v2), Tagliabue, Dung and Berg. The paper is &copy; its authors; this page links and explains, it does not copy. Part of <a href="https://idvorkin-ai-tools.github.io/">the field maps</a>.</footer>
+</body>
+</html>

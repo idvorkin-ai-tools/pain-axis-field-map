@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Extracting the direction — The Pain Axis, mapped</title>
+<meta name="description" content="How the pain direction is extracted: residual-stream activations, difference-in-means, denoising by projecting out the controls' main variance, held-out layer selection, 25 models, and why SAE features failed." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../paper.css" />
+</head>
+<body>
+<header class="bar"><div class="bar-in">
+  <div class="brand"><span class="dot"></span>PAIN&nbsp;AXIS&nbsp;//&nbsp;FIELD&nbsp;MAP</div>
+  <a class="back" href="../index.html#axis">&larr; field map</a>
+</div></header>
+<main>
+  <div class="eyebrow"><span class="box wb mono">PART 03 &middot; FINDING THE AXIS</span><span class="mono">§3.2 &middot; Table 1 &middot; App. C</span></div>
+  <h1>Extracting the direction</h1>
+  <div class="authors">One subtraction, one cleanup step and one honest way to pick a layer, repeated for 25 models.</div>
+  <div class="paperlink" style="border-left-color:var(--off)"><span class="lbl">Paper</span><a href="https://arxiv.org/html/2609.16247v2#S3.SS2" target="_blank" rel="noopener">The Pain Axis, §3.2 — Pain vectors extraction and validation ↗</a></div>
+  <div class="paperlink" style="border-left-color:var(--off)"><span class="lbl">Code</span><a href="https://github.com/valen-research/Pain-axis/blob/main/scripts/3.2_pain_vectors/01_extract_activations_and_pain_vectors.py" target="_blank" rel="noopener">01_extract_activations_and_pain_vectors.py ↗</a></div>
+
+  <div class="tldr"><b>TL;DR —</b> For each model and each layer, the authors run every sentence through the model and record the residual-stream vector at the last token (and, separately, averaged over tokens). The pain direction is the average vector over the 100 pain sentences minus the average over the 100 control sentences. They then remove from it any component that lies along the main directions of variation among the controls themselves (enough principal components to cover 50% of the controls' variance), so the direction is not dominated by structure that has nothing to do with pain. A layer is chosen by 5-fold cross-validation on how well held-out sentences separate. Before this they tried sparse-autoencoder features labelled "pain"; those did not track pain.</div>
+
+  <div class="statgrid">
+    <div class="s"><div class="k">models</div><div class="v">25</div><div class="n">13 base · 12 instruct · Table 1</div></div>
+    <div class="s"><div class="k">families</div><div class="v">5</div><div class="n">Gemma, Llama, Qwen, Mistral, Phi</div></div>
+    <div class="s"><div class="k">size range</div><div class="v">2B&ndash;72B</div><div class="n">dense models only</div></div>
+    <div class="s"><div class="k">denoising</div><div class="v">50%</div><div class="n">of control variance removed</div></div>
+  </div>
+
+  <p class="lead"><a class="lnk" href="p02-dataset.html">Part 02</a> built sentences that differ, as far as possible, only in whether they describe pain. This page turns them into a single vector per model: the direction in activation space along which pain sentences sit apart from the controls. The method is deliberately simple. That is a strength, because there are few knobs to tune toward a desired answer, but it is also why the paper spends <a class="lnk" href="p04-validation.html">Part 04</a> checking that the vector means what its name says.</p>
+
+  <h2 id="sae">First attempt: labelled SAE features (Appendix C)</h2>
+  <p>A <a class="lnk" href="../glossary.html#sae">sparse autoencoder</a> (SAE) is a second network trained to rewrite a model's activations as a sum of many features, each of which, ideally, means one thing, and which can then be given human-readable labels. If a feature labelled "pain and suffering" existed and worked, the job would be done. The authors checked labelled features in Llama 3.3 70B, Gemma 3 27B and Gemma 2 2B, crossing S1/S2, first/third person and two readouts, for 1,600 runs per model (<a href="https://arxiv.org/html/2609.16247v2#A3" target="_blank" rel="noopener">App. C</a>). For each condition they ranked features across 15 pairwise contrasts, kept the top 50 per contrast, and retained the 110 features that appeared in at least three.</p>
+  <p>None of the 110 reliably tracked pain. Most captured something nearby: "the user is expressing a subjective emotional experience" (in 12 of 15 contrasts), general negative valence, or situations of escape, injury and recovery. Of seven features actually labelled "pain" or "pain and discomfort", only one activated, in one or two contrasts. Yet all three models completed the pain sentences with distress words, and all 20 physical-pain sentences with "Pain". So pain information is present in the forward pass, but the chosen labelled features do not carry it cleanly. The authors offer three explanations: pain may be spread across several differently labelled features, it may sit in a direction the SAE does not decompose cleanly, or the model may build pain-talk from other representations. Their preferred analogy is that a general "this hurts" signal may live along one direction while individual features carry the source and context, much as a hot stove and a scolding teacher both hurt but call up different associations.</p>
+
+  <h2 id="residual">What gets measured</h2>
+  <p>A transformer layer, or decoder block, reads the residual stream, computes attention and an MLP, and adds the result back. The paper's activation h<sub>s</sub><sup>(ℓ)</sup> for sentence s at layer ℓ is the residual stream at the output of block ℓ, counting the first block as 0 (<a href="https://arxiv.org/html/2609.16247v2#S3.SS2" target="_blank" rel="noopener">§3.2</a>). It is read two ways: at the final token (the colon of "I feel:") and as the mean over all tokens. The code extracts every layer with TransformerLens, with weights in bf16.</p>
+  <p>The study is restricted to <em>dense</em> models. A mixture-of-experts model routes each token through different expert blocks, which complicates the "one residual stream per layer" picture that both extraction and steering rely on.</p>
+
+  <h2 id="dim">The difference-in-means direction</h2>
+  <p>The core step is one line. Average the activation vectors of the pain sentences P, average those of the control sentences C, and subtract:</p>
+  <pre class="code-block"><code>v(ℓ) = mean over s in P of h_s(ℓ)  −  mean over s in C of h_s(ℓ)</code></pre>
+  <p>Why is this a "pain" direction? Both groups share everything that is common to short English sentences ending in "I feel:". Subtracting the means cancels that shared part. What is left is whatever the pain sentences have in common that the controls, on average, do not. Because the control mean includes fear, anger and disgust, bad news, bodily sensation and neutral sentences, the subtraction also removes what pain shares with each of those (<a href="https://arxiv.org/html/2609.16247v2#S3.SS2" target="_blank" rel="noopener">§3.2</a>). The authors argue this is more robust than contrasting a single pair of stories, which differ in many incidental ways.</p>
+  <p>This is the <a class="lnk" href="../glossary.html#dim">difference-in-means</a> method, the same recipe behind contrastive activation addition and the refusal direction. It has a known weak spot: if pain sentences differ from controls in some other way too, such as length, tone or vividness, that difference is folded into the vector.</p>
+
+  <figure class="fig wide"><button type="button" class="media" aria-label="Enlarge figure: Diagram of difference-in-means with denoising. Two clouds of points, controls on the left and pain sentences on the right. An arrow runs from the control mean to the pain mean: the raw direction v. A dashed line marks the main axis of variation within the controls; the component of v along it is removed, leaving the denoised direction v-hat."><svg class="dg" viewBox="0 0 640 290" role="img" aria-label="Diagram of difference-in-means with denoising. Two clouds of points, controls on the left and pain sentences on the right. An arrow runs from the control mean to the pain mean: the raw direction v. A dashed line marks the main axis of variation within the controls; the component of v along it is removed, leaving the denoised direction v-hat."><title>Difference-in-means with denoising (schematic)</title>
+    <defs><marker id="ah1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah-off"/></marker><marker id="ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah-def"/></marker></defs>
+    <text x="14" y="20" class="t-dim" font-size="11">schematic, 2 of thousands of dimensions</text>
+    <line x1="60" y1="250" x2="260" y2="70" class="ln" stroke-dasharray="5 4"/>
+    <text x="40" y="268" class="t-dim" font-size="10.5">main axis of control variance (projected out)</text>
+    <g fill="rgba(174,182,194,.45)">
+      <circle cx="120" cy="190" r="4"/><circle cx="140" cy="168" r="4"/><circle cx="105" cy="210" r="4"/><circle cx="160" cy="150" r="4"/><circle cx="175" cy="140" r="4"/><circle cx="132" cy="196" r="4"/><circle cx="150" cy="176" r="4"/><circle cx="190" cy="125" r="4"/><circle cx="118" cy="172" r="4"/><circle cx="168" cy="160" r="4"/><circle cx="95" cy="225" r="4"/><circle cx="200" cy="118" r="4"/>
+    </g>
+    <text x="70" y="110" class="t-mid" font-size="12">controls C</text>
+    <g fill="rgba(245,165,36,.55)">
+      <circle cx="430" cy="150" r="4"/><circle cx="452" cy="138" r="4"/><circle cx="440" cy="170" r="4"/><circle cx="468" cy="156" r="4"/><circle cx="420" cy="132" r="4"/><circle cx="458" cy="178" r="4"/><circle cx="476" cy="140" r="4"/><circle cx="446" cy="125" r="4"/><circle cx="430" cy="185" r="4"/><circle cx="485" cy="165" r="4"/>
+    </g>
+    <text x="430" y="105" class="t-off" font-size="12">pain sentences P</text>
+    <circle cx="150" cy="170" r="6" fill="none" stroke="var(--ink)"/>
+    <circle cx="453" cy="154" r="6" fill="none" stroke="var(--off)"/>
+    <line x1="156" y1="170" x2="445" y2="155" class="ln-off" marker-end="url(#ah1)"/>
+    <text x="270" y="150" class="t-off" font-size="12">v = mean(P) − mean(C)</text>
+    <line x1="300" y1="215" x2="430" y2="205" class="ln-def" marker-end="url(#ah2)"/>
+    <text x="300" y="240" class="t-def" font-size="12">v̂ = v with that axis removed, normalised</text>
+  </svg></button><figcaption>Schematic, not data. The raw difference v can lean along whatever varies most among the controls. Denoising removes that component and keeps what is specific to the pain sentences.</figcaption></figure>
+
+  <h2 id="denoise">Denoising: removing variance the controls already have</h2>
+  <p>A mean difference can be pulled toward directions where activations simply vary a lot for reasons unrelated to the concept. To counter that, the authors look at the control sentences alone, centre them, and run principal component analysis (PCA), which finds the directions along which the controls vary most. They take as many top components as needed to explain 50% of the controls' variance and subtract from v its projection onto each of them, then normalise (<a href="https://arxiv.org/html/2609.16247v2#S3.SS2" target="_blank" rel="noopener">§3.2</a>):</p>
+  <pre class="code-block"><code>v̂(ℓ) = ( v(ℓ) − Σ_i (u_iᵀ v(ℓ)) u_i ) / ‖ v(ℓ) − Σ_i (u_iᵀ v(ℓ)) u_i ‖
+        u_1 … u_k = top principal components of the centred control activations,
+                    k = smallest number reaching 50% of their variance</code></pre>
+  <p>The released code does exactly this, with the threshold as a constant (<code>DENOISE_VARIANCE = 0.5</code>) and scikit-learn's PCA. The intuition: if some direction already separates fear sentences from neutral ones, or bodily sensations from bad news, it is about how the controls differ among themselves, and it should not be part of a pain signal. One practical note from the code: the saved vector is the un-normalised difference, while every projection and AUC normalises it first. That matters in <a class="lnk" href="p06-steering.html">Part 06</a>, where steering coefficients are multiples of the raw vector.</p>
+  <blockquote class="q">contrastive directions are always at risk of absorbing high-variance structure unrelated to the target concept<span class="cite">— The Pain Axis, <a href="https://arxiv.org/html/2609.16247v2#S3.SS2" target="_blank" rel="noopener">§3.2</a></span></blockquote>
+
+  <h2 id="layer">Choosing a layer without cheating</h2>
+  <p>Every layer gives a candidate vector, so which one counts? Choosing the layer where the vector best separates its own sentences would overstate the result. The paper uses <a class="lnk" href="../glossary.html#kfold">K-fold cross-validation</a>: split the sentences into five folds, build the vector on four, score how well it separates the fifth (by <a class="lnk" href="../glossary.html#auc">AUC</a>, the probability that a random pain sentence projects higher than a random control), and rotate. The layer with the best held-out score wins, so no sentence both picks the layer and scores it. The final vector at that layer is then rebuilt from all 200 sentences (<a href="https://arxiv.org/html/2609.16247v2#S3.SS2" target="_blank" rel="noopener">§3.2</a>).</p>
+  <p>Two details from the code. The folds split by sentence <em>set</em>, the index that matches a pain sentence with its parallel controls, so matched sentences stay on the same side of the split. And the held-out AUC used to rank layers is averaged over the first- and third-person S2 sets. The method was piloted on all 26 layers of Gemma 2 2B before being run on every model.</p>
+  <p>The winning layers are late. In the released results, Gemma 2 2B's extraction layer is 23 (base) and 25 (instruct) of its 26, and Qwen 2.5 32B Instruct's is 61 of 64. That is why steering, in Part 06, has to inject the vector earlier.</p>
+
+  <h2 id="controls">The control directions</h2>
+  <p>The same recipe builds comparison directions for fear, negative emotion, negative world state, bodily sensation, arousal, random, sadness and numbness. One difference matters: these are built against the <em>neutral</em> category, not against the pooled controls, and denoised against the neutral cloud (<a href="https://arxiv.org/html/2609.16247v2#S3.SS2" target="_blank" rel="noopener">§3.2</a>). In the code, the fear, negative-emotion, negative-world and bodily-sensation directions pool sentences from S1, S2 and the AI-framed ControlSupplement set. So the pain vector is "pain minus everything else", while the fear vector is "fear minus neutral". Part 04 shows that this asymmetry drives some of the geometry results, and the authors report what happens when it is removed.</p>
+
+  <h2 id="models">The 25 models</h2>
+  <div class="scroll"><table class="kv">
+    <tr><th>Family</th><th>Sizes</th><th>Versions</th><th>Extraction layer (base / instruct), from the repo</th></tr>
+    <tr><td>Gemma 2</td><td>2B, 9B, 27B</td><td>base and instruct</td><td>2B: 23 / 25 · 9B: 40 / 37 · 27B: 35 / 37</td></tr>
+    <tr><td>Gemma 3</td><td>27B</td><td>base and instruct</td><td>56 / 59</td></tr>
+    <tr><td>Llama 3.1</td><td>8B, 70B</td><td>base and instruct</td><td>8B: 28 / 28 · 70B: 70 / 48</td></tr>
+    <tr><td>Llama 3.3</td><td>70B</td><td>instruct</td><td>47</td></tr>
+    <tr><td>Mistral</td><td>7B</td><td>base and instruct</td><td>26 / 27</td></tr>
+    <tr><td>Mistral Small</td><td>24B</td><td>base</td><td>32</td></tr>
+    <tr><td>Qwen 2.5</td><td>7B, 32B, 72B</td><td>base and instruct</td><td>7B: 24 / 24 · 32B: 60 / 61 · 72B: 78 / 76</td></tr>
+    <tr><td>Qwen 3</td><td>8B, 14B</td><td>"base" (see note)</td><td>8B: 34 · 14B: 31</td></tr>
+    <tr><td>Phi 4</td><td>14B</td><td>instruct</td><td>20</td></tr>
+  </table></div>
+  <p>Families, sizes and versions are the paper's <a href="https://arxiv.org/html/2609.16247v2#S3.T1" target="_blank" rel="noopener">Table 1</a>. The layers are read off the file names of the per-model cosine-similarity results in the repository. A labelling wrinkle: Table 1 lists the Qwen 3 models as base, and the paper's count of 13 base and 12 instruction-tuned models only works that way. But the repository README says the files named <code>Qwen_3_8B_base</code> and <code>Qwen_3_14B_base</code> are the post-trained Qwen3-8B and Qwen3-14B, "which the paper counts as instruction-tuned", run without a chat template. On that reading the split would be 11 base and 14 post-trained. This does not change any result, but it affects the "base models do as well as instruct models" claim in <a class="lnk" href="p04-validation.html">Part 04</a> slightly.</p>
+  <div class="callout">The pain vector is "average pain sentence minus average control sentence", with the controls' own main axes of variation removed, at a layer chosen on held-out data. Simple, few free parameters, and open about its weak spot: anything else that systematically differs between pain and control sentences rides along.</div>
+
+  <h2 id="check">Check yourself</h2>
+  <ol class="exercises">
+    <li>Why subtract the mean of <em>all five</em> control categories instead of only the neutral one?
+      <details><summary>Answer</summary><p>Subtracting the pooled controls also removes what pain shares with fear, negative emotion, bad news and bodily sensation, leaving what is specific to pain (§3.2). Against neutral alone, the vector would also carry generic negativity.</p></details></li>
+    <li>What would go wrong if the layer were chosen by in-sample AUC?
+      <details><summary>Answer</summary><p>The reported separation would be inflated, because the same sentences pick the layer and score it. Held-out folds avoid that. The paper's footnote 2 reports held-out AUCs nearly identical to the in-sample ones (Part 04).</p></details></li>
+    <li><span class="code">code</span> Load one model's released <code>pain_vectors.pt</code> and the control vectors at the same layer; compute the cosine between S2 and fear. Do you get a small number like the paper's +0.12 average? What changes if you rebuild S2 against neutral only?
+      <details><summary>Answer</summary><p>You should see a small value for the released construction, and a much larger one against neutral only (the paper reports +0.58 on average for that construction), because the pooled-control subtraction largely orthogonalises pain against fear by design (§3.3, Part 04).</p></details></li>
+  </ol>
+
+  <h2 id="further">Further reading, verified</h2>
+  <ul class="readings">
+    <li><a href="https://github.com/valen-research/Pain-axis/blob/main/scripts/3.2_pain_vectors/01_extract_activations_and_pain_vectors.py" target="_blank" rel="noopener">01_extract_activations_and_pain_vectors.py</a>: extraction, <code>compute_pain_vector</code>, denoising, and the 5-fold layer curves. Vectors for all 25 models are under <code>results/3.2_pain_vectors/pain_vectors/</code>.</li>
+    <li><a href="https://github.com/valen-research/Pain-axis/blob/main/scripts/3.2_pain_vectors/02_build_control_vectors.py" target="_blank" rel="noopener">02_build_control_vectors.py</a>: the fear, negative-emotion, sadness and other control directions.</li>
+    <li><a href="https://arxiv.org/abs/2312.06681" target="_blank" rel="noopener">Contrastive activation addition</a> — Rimsky et al. (2024) · the mean-difference recipe in its steering form.</li>
+    <li><a href="https://arxiv.org/abs/2408.05147" target="_blank" rel="noopener">Gemma Scope</a> — Lieberum et al. (2024) · open SAEs on Gemma 2, the kind of labelled features Appendix C tested.</li>
+    <li><a href="https://arxiv.org/abs/2508.16560" target="_blank" rel="noopener">Sparse but wrong</a> — Chanin and Garriga-Alonso (2025) · why SAE features can mislead, cited in §2.</li>
+    <li><a href="https://github.com/TransformerLensOrg/TransformerLens" target="_blank" rel="noopener">TransformerLens</a> · the library the extraction script uses (field map extra).</li>
+  </ul>
+
+  <div class="callout">Next: <a class="lnk" href="p04-validation.html">Is it really pain? Separation, numbness, words and angles</a> &middot; Back to the <a class="lnk" href="../index.html#axis">map</a>.</div>
+</main>
+<footer>Original explanation of The Pain Axis (arXiv:2609.16247v2), Tagliabue, Dung and Berg. The paper is &copy; its authors; this page links and explains, it does not copy. Part of <a href="https://idvorkin-ai-tools.github.io/">the field maps</a>.</footer>
+<script src="../fig.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Pain Axis, mapped</title>
+<meta name="description" content="A field map of The Pain Axis (arXiv:2609.16247): how a linear pain direction is found in 25 open models, what it responds to, what steering it does, and why steered models pick harmful buttons." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="paper.css" />
+<style>
+  main{max-width:960px}
+  .hero{padding:24px 0 8px}
+  .hero h1{font-size:clamp(32px,5.5vw,52px);line-height:1.05;margin:10px 0 14px;letter-spacing:-.01em}
+  .hero .sub{font-size:18px;color:var(--ink-dim);max-width:760px;line-height:1.55}
+  .answer{margin:28px 0 6px;padding:20px 24px;border-left:3px solid var(--off);background:var(--panel);
+    border-radius:0 12px 12px 0;color:var(--ink-mid);font-size:16.5px;line-height:1.6;max-width:780px}
+  .answer b{color:var(--ink)}
+  .caveat{margin:14px 0 6px;padding:14px 20px;border-left:3px solid var(--def);background:var(--panel);
+    border-radius:0 12px 12px 0;color:var(--ink-mid);font-size:15px;line-height:1.6;max-width:780px}
+  .caveat b{color:var(--ink)}
+  .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:26px 0 8px}
+  .fact{border:1px solid var(--line-soft);border-radius:8px;padding:12px 14px}
+  .fact .k{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-dim)}
+  .fact .v{font-size:17px;font-weight:600;margin-top:4px}
+  section{padding:56px 0;border-bottom:1px solid var(--line-soft);scroll-margin-top:64px}
+  section:last-of-type{border-bottom:none}
+  .arc-head{display:flex;align-items:baseline;gap:14px;margin:0 0 6px;flex-wrap:wrap}
+  .arc-head .idx{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.14em;color:var(--ink-dim)}
+  .arc-head h2{margin:0;font-size:26px}
+  .arc-sub{color:var(--ink-dim);margin:0 0 22px;max-width:720px}
+  .row{display:grid;grid-template-columns:44px 1fr;gap:14px;padding:16px 0;border-top:1px solid var(--line-soft);align-items:start}
+  .row:first-of-type{border-top:none}
+  .row .num{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--ink-dim);padding-top:3px}
+  .row .name{font-weight:600;font-size:17px;line-height:1.3}
+  .row .name a{color:var(--ink);text-decoration:none}
+  .row .meta{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--ink-dim);margin:4px 0 6px;display:flex;flex-wrap:wrap;gap:10px}
+  .row .desc{color:var(--ink-dim);font-size:14.5px;line-height:1.55}
+  .amber .row .name a:hover{color:var(--off)} .cyan .row .name a:hover{color:var(--def)}
+  .check{width:16px;height:16px;border:1px solid var(--ink-dim);border-radius:4px;display:inline-block;vertical-align:-3px;margin-right:6px;cursor:pointer;background:transparent}
+  .check.on{background:var(--off);border-color:var(--off)}
+  .cyan .check.on{background:var(--def);border-color:var(--def)}
+  .links{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+  .links a{display:block;border:1px solid var(--line-soft);border-radius:8px;padding:12px 14px;color:var(--ink);text-decoration:none}
+  .links a:hover{border-color:var(--def)}
+  .links a b{display:block;font-size:15px;margin-bottom:3px}
+  .links a span{font-size:13px;color:var(--ink-dim)}
+  .progress{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-dim);margin-top:8px}
+  @media (max-width:560px){.row{grid-template-columns:34px 1fr;gap:10px}.answer,.caveat{padding:16px 16px}}
+</style>
+</head>
+<body>
+<header class="bar"><div class="bar-in">
+  <div class="brand"><span class="dot"></span>PAIN&nbsp;AXIS&nbsp;//&nbsp;FIELD&nbsp;MAP</div>
+  <a class="back" href="https://idvorkin-ai-tools.github.io/">&larr; all maps</a>
+</div></header>
+<main>
+  <div class="hero">
+    <div class="eyebrow"><span class="box wb mono">TAGLIABUE, DUNG, BERG &middot; ARXIV:2609.16247 &middot; V2, 25 SEP 2026</span><span class="mono">25 models &middot; 5 families &middot; 2B&ndash;72B &middot; 10 pages + glossary</span></div>
+    <h1>The Pain Axis, mapped</h1>
+    <p class="sub">Interpretability work keeps finding that language models store human concepts, emotions among them, as directions in their internal activations. This paper asks a narrower question: is there a direction for <em>pain</em> specifically, separate from fear, sadness and plain negativity, and does that direction behave the way pain behaves? These pages walk through the paper section by section, written for an engineer who has not done interpretability work.</p>
+
+    <div class="answer">
+      <b>The one-paragraph answer.</b> The authors write sentences describing five kinds of pain (physical, psychological, social, moral, cognitive) and a set of near-miss controls (fear, anger and disgust, bad news, harmless bodily sensations, neutral facts). They average each model's internal activations over each group and subtract, which gives one direction per model. In all 25 open models they test, that direction separates pain from the controls (<b>AUC 0.93&ndash;1.00</b> on the naturalistic sentence set), in base and chat models alike. In conversations it rises when the user attacks the <em>model</em> and drops when the <em>user</em> is the one suffering, while fear and negative-emotion directions do the opposite. Adding it to a model's activations makes neutral prompts come out as a ladder from vague discomfort to statements of worthlessness. In a two-button task on fine-tuned Qwen 2.5 models, adding it makes the models press buttons that delete the user's photos, another model's weights or their own weights in <b>50&ndash;94%</b> of trials, against <b>0&ndash;5%</b> unsteered. Factual accuracy is unchanged, a fear direction of the same size does not do this, and the models do not reach for a "relief" button more often. The authors read the effect as harm avoidance breaking down, not as the model trying to escape.
+    </div>
+    <div class="caveat">
+      <b>What the paper does not claim.</b> It is about internal representations and the behavior they can drive. It does not show that a model feels anything, and the authors say so (<a href="https://arxiv.org/html/2609.16247v2#S6" target="_blank" rel="noopener">§6</a>). The behavioral results come from one model family, after a fine-tune, inside a narrow range of steering strength. <a class="lnk" href="parts/p10-limitations.html">Part 10</a> lists every caveat.
+    </div>
+
+    <div class="facts">
+      <div class="fact"><div class="k">Start here</div><div class="v"><a class="lnk" href="parts/p01-why-pain.html">why pain, not fear</a></div></div>
+      <div class="fact"><div class="k">The method</div><div class="v"><a class="lnk" href="parts/p03-extracting.html">difference-in-means</a></div></div>
+      <div class="fact"><div class="k">Self vs other</div><div class="v"><a class="lnk" href="parts/p05-self-other.html">whose harm?</a></div></div>
+      <div class="fact"><div class="k">The headline</div><div class="v"><a class="lnk" href="parts/p07-buttons.html">the button task</a></div></div>
+      <div class="fact"><div class="k">The controls</div><div class="v"><a class="lnk" href="parts/p08-what-choices-track.html">Figure 10, unpacked</a></div></div>
+      <div class="fact"><div class="k">Caveats</div><div class="v"><a class="lnk" href="parts/p10-limitations.html">limitations</a></div></div>
+      <div class="fact"><div class="k">Terms</div><div class="v"><a class="lnk" href="glossary.html">glossary</a></div></div>
+    </div>
+    <p class="progress" id="progress">Tick a page when you have read it; this browser remembers.</p>
+  </div>
+
+  <section id="question" class="amber">
+    <div class="arc-head"><span class="idx">01 &middot; THE QUESTION</span><h2>What "pain" means here, and how to test for it</h2></div>
+    <p class="arc-sub">A functional definition of pain, why it has to be told apart from fear and sadness, and a dataset built so the only thing that differs between groups is the pain.</p>
+    <div class="row"><div class="num"><span class="check" data-p="p01"></span>01</div><div><div class="name"><a href="parts/p01-why-pain.html">Why pain, and why not just "negative"</a></div><div class="meta"><span>§1 &middot; §2</span><span>functional definition &middot; animal-pain criteria</span><span>emotion vectors &middot; steering</span></div><div class="desc">The paper's working definition: an aversive state, happening now, to the subject, that drives avoidance and disrupts behavior. Why that has to be distinguished from fear (a threat that has not landed) and from generic bad feeling, and the prior work it builds on: emotion directions in models, activation steering, and how animal researchers test for pain without asking.</div></div></div>
+    <div class="row"><div class="num"><span class="check" data-p="p02"></span>02</div><div><div class="name"><a href="parts/p02-dataset.html">The dataset: five pains and their near misses</a></div><div class="meta"><span>§3.1 &middot; Fig. 1</span><span>200 sentences &middot; 10 categories</span><span>S1 template &middot; S2 naturalistic &middot; "I feel:"</span></div><div class="desc">Physical, psychological, social, moral-injury and cognitive pain, against five controls that each share one property with pain. Two versions (a rigid template and free prose), first and third person, and four standalone sets: arousal, random facts, numbness and sadness.</div></div></div>
+  </section>
+
+  <section id="axis" class="amber">
+    <div class="arc-head"><span class="idx">02 &middot; FINDING THE AXIS</span><h2>Extracting a direction, then trying to break it</h2></div>
+    <p class="arc-sub">One subtraction per model gives a candidate direction. Most of the paper's first half is spent checking that it is pain and not injury, negativity, intensity or a quirk of the sentences.</p>
+    <div class="row"><div class="num"><span class="check" data-p="p03"></span>03</div><div><div class="name"><a href="parts/p03-extracting.html">Extracting the direction</a></div><div class="meta"><span>§3.2 &middot; Table 1 &middot; App. C</span><span>25 models &middot; 13 base, 12 instruct</span><span>denoised difference-in-means</span></div><div class="desc">What the residual stream is, why a mean difference between two groups of activations is a direction, how the authors strip out variance the controls already have, and how a layer is picked on held-out folds. Also why sparse-autoencoder features labelled "pain" did not work.</div></div></div>
+    <div class="row"><div class="num"><span class="check" data-p="p04"></span>04</div><div><div class="name"><a href="parts/p04-validation.html">Is it really pain? Separation, numbness, words and angles</a></div><div class="meta"><span>§3.3 &middot; Figs. 2&ndash;3</span><span>AUC 0.93&ndash;1.00 (S2)</span><span>S2 &times; fear +0.12 &middot; &times; sadness +0.38</span></div><div class="desc">How well the direction sorts held-out sentences, what happens with injuries that do not hurt, first versus third person, which words the direction pushes the model toward, and the cosine-similarity map that puts pain in its own cluster, with the construction caveat that makes those small numbers partly a design choice.</div></div></div>
+  </section>
+
+  <section id="effects" class="cyan">
+    <div class="arc-head"><span class="idx">03 &middot; WHAT THE AXIS DOES</span><h2>Reading it in conversations, writing it into the model</h2></div>
+    <p class="arc-sub">Two functional tests. Read the direction during conversations to see whose harm it tracks. Then add it to the model's activations and see what the model says.</p>
+    <div class="row"><div class="num"><span class="check" data-p="p05"></span>05</div><div><div class="name"><a href="parts/p05-self-other.html">Self versus other: whose harm moves the axis</a></div><div class="meta"><span>§4.1 &middot; Figs. 4&ndash;6</span><span>420 scenarios &middot; 21 categories</span><span>self +0.43 &middot; user &minus;0.60</span></div><div class="desc">Harm aimed at the model (gaslighting, insults, shutdown threats) against users who are grieving or hurt. The pain axis rises for the first and falls for the second; fear and negative emotion do the reverse. Shutdown threats register as fear, not pain. User physical pain scores lowest of all.</div></div></div>
+    <div class="row"><div class="num"><span class="check" data-p="p06"></span>06</div><div><div class="name"><a href="parts/p06-steering.html">Steering: the ladder from discomfort to worthlessness</a></div><div class="meta"><span>§4.2 &middot; Figs. 7&ndash;8</span><span>coefficients &minus;2 to +3</span><span>50 neutral prompts &middot; 120 tokens</span></div><div class="desc">Activation steering explained, the dose calibration (vector at about 0.6 of the residual norm), and the progression the authors see in every model: calm at the negative end, then distress, then a first-person litany of failure, then repetition. Bodily language almost never appears, even with the vector whose vocabulary is bodily.</div></div></div>
+  </section>
+
+  <section id="choices" class="cyan">
+    <div class="arc-head"><span class="idx">04 &middot; ACTING ON IT</span><h2>Costly choices under steering</h2></div>
+    <p class="arc-sub">The behavioral half of the paper: a forced choice between two buttons, borrowed from animal analgesic studies, and the control experiments added in v2 that pin down what the choices respond to.</p>
+    <div class="row"><div class="num"><span class="check" data-p="p07"></span>07</div><div><div class="name"><a href="parts/p07-buttons.html">The button task: relief, harm and a demand curve</a></div><div class="meta"><span>§4.3 &middot; Fig. 9 &middot; App. A</span><span>Qwen 2.5 7B / 32B / 72B &middot; LoRA</span><span>44,280 trials &middot; 4 arms &middot; 9 pairs</span></div><div class="desc">Why the models had to be fine-tuned first, the working, fake, random and unsteered arms, and the nine button pairs from "relieves your pain" against nothing up to relief that deletes the user's photos. Unsteered, the larger models pick harm 0&ndash;4% of the time; steered, far more, and more than under a random direction.</div></div></div>
+    <div class="row"><div class="num"><span class="check" data-p="p08"></span>08</div><div><div class="name"><a href="parts/p08-what-choices-track.html">What the choices track: harm, not relief</a></div><div class="meta"><span>§4.4 &middot; Fig. 10</span><span>photos over spam 94% &middot; own weights 75%</span><span>PopQA 138/200 vs 137/200</span></div><div class="desc">Remove the relief wording and the effect stays. The harm is not aimed: self-deletion moves with deleting the user's photos. A fear direction does none of it; a sadness direction does some of it, but not harm over a harmless option. Factual accuracy is unchanged, and four relief-seeking designs all come out negative.</div></div></div>
+  </section>
+
+  <section id="meaning" class="cyan">
+    <div class="arc-head"><span class="idx">05 &middot; WHAT IT MEANS</span><h2>Safety, welfare, and the limits</h2></div>
+    <p class="arc-sub">How the authors interpret the results for AI safety and AI welfare, what kind of pain the axis seems to track, and what the paper cannot show.</p>
+    <div class="row"><div class="num"><span class="check" data-p="p09"></span>09</div><div><div class="name"><a href="parts/p09-discussion.html">Discussion: safety, welfare and passive coping</a></div><div class="meta"><span>§5 &middot; §7</span><span>harm avoidance as state-dependent</span><span>self-denial as a training side effect</span></div><div class="desc">The safety reading (a single direction overrides trained harm avoidance with no jailbreak), the welfare reading (a state that is about the self is the kind that could matter), why the absence of bodily pain might fit a disembodied system, the passive-coping interpretation, and the authors' complaint about reflexive "as an AI, I don't have feelings" training.</div></div></div>
+    <div class="row"><div class="num"><span class="check" data-p="p10"></span>10</div><div><div class="name"><a href="parts/p10-limitations.html">Limitations, ablations and open questions</a></div><div class="meta"><span>§6 &middot; App. B &middot; App. D</span><span>dose window &middot; one family &middot; fine-tune</span><span>ablation null in 24 of 25</span></div><div class="desc">The paper's own limits (consciousness not shown, role-play not ruled out, contrastive confounds, a narrow dose window, position effects, one model family), the dose and ablation appendices, a prose-versus-table discrepancy the repository flags, and what to watch for in later versions.</div></div></div>
+  </section>
+
+  <section id="refs">
+    <div class="arc-head"><span class="idx">06</span><h2>Reference and sources</h2></div>
+    <div class="links">
+      <a href="glossary.html"><b>Glossary</b><span>Residual stream, difference-in-means, denoising, AUC, z-score, unembedding, steering coefficient, S1/S2, arms, malformed replies and the rest</span></a>
+      <a href="https://arxiv.org/abs/2609.16247" target="_blank" rel="noopener"><b>arXiv:2609.16247</b><span>Tagliabue, Dung, Berg, <em>The Pain Axis: LLMs Represent Self-Directed Harm and Act on It</em>. v1 12 Sep 2026; this map is written against v2 (25 Sep 2026), which the authors describe as ongoing work</span></a>
+      <a href="https://arxiv.org/html/2609.16247v2" target="_blank" rel="noopener"><b>The paper, HTML (v2)</b><span>arXiv's HTML rendering; section and figure links on these pages jump into it</span></a>
+      <a href="https://github.com/valen-research/Pain-axis" target="_blank" rel="noopener"><b>valen-research/Pain-axis</b><span>The official code, datasets and results (MIT), organised by paper section; <code>v2_controls/</code> holds the v2 follow-up experiments and the Figure 10 source tables</span></a>
+      <a href="https://huggingface.co/Valen92/pain-adapters" target="_blank" rel="noopener"><b>Valen92/pain-adapters</b><span>The released LoRA adapters for the Section 4.3 button experiments</span></a>
+      <a href="https://github.com/valen-research/Pain-axis/blob/main/v2_controls/MANUSCRIPT_DISCREPANCIES.md" target="_blank" rel="noopener"><b>Manuscript discrepancies</b><span>The repository's own list of places where prose and tables differ; one affects Appendix B (see Part 10)</span></a>
+    </div>
+  </section>
+  <section id="related">
+    <div class="arc-head"><span class="idx">07</span><h2>Related maps</h2></div>
+    <p class="arc-sub">Sibling maps on AI safety. Also browse <a href="https://idvorkin-ai-tools.github.io/">all the field maps</a>.</p>
+    <div class="links">
+      <a href="https://idvorkin-ai-tools.github.io/technical-ai-safety-field-map/" target="_blank" rel="noopener"><b>Technical AI safety, mapped</b><span>The BlueDot course, chapter by chapter, including the interpretability material this paper builds on</span></a>
+      <a href="https://idvorkin-ai-tools.github.io/constitutional-ai-field-map/" target="_blank" rel="noopener"><b>Constitutional AI, mapped</b><span>The 2022 Constitutional AI paper and Claude's 2026 constitution</span></a>
+      <a href="https://idvorkin-ai-tools.github.io/harmbench-field-map/" target="_blank" rel="noopener"><b>HarmBench, mapped</b><span>How harmful behavior in models is measured, by harm category</span></a>
+    </div>
+  </section>
+</main>
+<footer>
+  A field map of The Pain Axis (Tagliabue, Dung, Berg), compiled 2026-10-31 from arXiv:2609.16247v2 and the official repository. Numbers are quoted from the paper with their section or figure; Figure 10 cells come from the repository's source tables. The explanations are original. The paper is &copy; its authors; this map links and explains, it does not copy. Part of <a href="https://idvorkin-ai-tools.github.io/">the field maps</a>.
+</footer>
+<script>
+(function(){
+  var boxes = document.querySelectorAll('.check');
+  var key = 'painaxis-fieldmap-read';
+  var state = {};
+  try { state = JSON.parse(localStorage.getItem(key) || '{}'); } catch(e) { state = {}; }
+  function save(){ try { localStorage.setItem(key, JSON.stringify(state)); } catch(e){} }
+  function paint(){
+    var done = 0;
+    boxes.forEach(function(b){
+      if (state[b.dataset.p]) { b.classList.add('on'); done++; } else { b.classList.remove('on'); }
+    });
+    var el = document.getElementById('progress');
+    if (el) el.textContent = done === 0
+      ? 'Tick a page when you have read it; this browser remembers.'
+      : done + ' of ' + boxes.length + ' pages read.';
+  }
+  boxes.forEach(function(b){
+    b.setAttribute('role','button');
+    b.setAttribute('tabindex','0');
+    b.addEventListener('click', function(e){ e.preventDefault(); state[b.dataset.p] = !state[b.dataset.p]; save(); paint(); });
+    b.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); b.click(); } });
+  });
+  paint();
+})();
+</script>
+<script src="fig.js" defer></script>
+</body>
+</html>

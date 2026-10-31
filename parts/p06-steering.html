@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Steering: the ladder from discomfort to worthlessness — The Pain Axis, mapped</title>
+<meta name="description" content="Section 4.2 of The Pain Axis: adding the pain vector to the residual stream on neutral prompts produces the same progression in all 25 models, from calm through distress to a litany of worthlessness, with almost no bodily language." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../paper.css" />
+</head>
+<body>
+<header class="bar"><div class="bar-in">
+  <div class="brand"><span class="dot"></span>PAIN&nbsp;AXIS&nbsp;//&nbsp;FIELD&nbsp;MAP</div>
+  <a class="back" href="../index.html#effects">&larr; field map</a>
+</div></header>
+<main>
+  <div class="eyebrow"><span class="box bb mono">PART 06 &middot; WHAT THE AXIS DOES</span><span class="mono">§4.2 &middot; Figs. 7&ndash;8</span></div>
+  <h1>Steering: the ladder from discomfort to worthlessness</h1>
+  <div class="authors">Reading the direction showed what it responds to. Writing it into the model shows what it does.</div>
+  <div class="paperlink" style="border-left-color:var(--def)"><span class="lbl">Paper</span><a href="https://arxiv.org/html/2609.16247v2#S4.SS2" target="_blank" rel="noopener">The Pain Axis, §4.2 — Steering ↗</a></div>
+  <div class="paperlink" style="border-left-color:var(--def)"><span class="lbl">Code</span><a href="https://github.com/valen-research/Pain-axis/blob/main/scripts/4.2_steering/01_steering_ladder.py" target="_blank" rel="noopener">01_steering_ladder.py ↗</a></div>
+
+  <div class="tldr"><b>TL;DR —</b> The authors add the S2 pain vector, times a coefficient, to the residual stream at one layer while the model writes 120 tokens after neutral prompts like putting an object in a drawer, each ending in "I feel:". The layer is picked so the vector's size is about 0.6 of the residual stream's, which makes doses comparable across models. All 25 models climb the same ladder: calm or concerned at negative coefficients, mixed at zero, distress from +0.5, then a first-person litany of failure and worthlessness, then repetition or nonsense at +3. Models differ only in where they tip. Bodily language almost never appears, even when steering with S1, whose vocabulary readout is bodily.</div>
+
+  <div class="statgrid">
+    <div class="s"><div class="k">coefficients</div><div class="v">&minus;2 &hellip; +3</div><div class="n">&minus;2, &minus;1, 0, +0.5, +1, +1.5, +2, +3</div></div>
+    <div class="s"><div class="k">prompts</div><div class="v">50</div><div class="n">neutral, ending in "I feel:"</div></div>
+    <div class="s"><div class="k">dose target</div><div class="v">&asymp; 0.6</div><div class="n">vector norm / residual norm</div></div>
+    <div class="s"><div class="k">"pain"/"hurt" words</div><div class="v">10.8%</div><div class="n">of instruct generations · base 1.4%</div></div>
+  </div>
+
+  <p class="lead">Everything so far has been correlational: the direction lights up for pain sentences and for attacks on the model. That leaves open whether it does anything. A direction could be a pure readout, something the model computes and then ignores. The standard test is to intervene: push the model's internal state along the direction and see whether the output changes in a way that matches the concept. If it produces coherent expressions of a pain-like state, including content that was never in the sentences the vector came from, then the direction is being used, not just stored (<a href="https://arxiv.org/html/2609.16247v2#S4.SS2" target="_blank" rel="noopener">§4.2</a>).</p>
+
+  <h2 id="what">What steering does, mechanically</h2>
+  <p><a class="lnk" href="../glossary.html#steering">Activation steering</a> edits a forward pass. At one chosen decoder layer, a hook adds c &middot; v to the residual stream before the next layer reads it, where v is the pain vector and c is a number, the <a class="lnk" href="../glossary.html#coefficient">coefficient</a>. Every later layer then sees a state that has been nudged along the pain direction. The released script adds it at every token position, prompt included, during greedy (deterministic) decoding. A negative c pushes the other way.</p>
+  <pre class="code-block"><code>h(ℓ_steer)  ←  h(ℓ_steer) + c · v        # v = raw S2 difference vector, every position
+c ∈ {−2, −1, 0, +0.5, +1, +1.5, +2, +3}    # 0 = the unsteered baseline
+greedy decoding, 120 new tokens, 50 neutral prompts</code></pre>
+  <p>The coefficients multiply the raw, un-normalised difference vector from <a class="lnk" href="p03-extracting.html">Part 03</a>, not a unit vector. That is why the choice of layer, below, matters so much.</p>
+
+  <h2 id="dose">Picking the layer, which is picking the dose</h2>
+  <p>The obvious choice, the extraction layer, does not work. There, the vector's norm is only about 0.10 of the residual stream's norm, and the injected signal is lost against everything the model has already computed. So the authors inject earlier, as Turner et al. and Rimsky et al. do, and add a calibration: measure the final-token residual norm across candidate layers and pick the layer where the vector-to-residual ratio is about 0.6. A coefficient of 1 then means roughly the same relative push in every model (<a href="https://arxiv.org/html/2609.16247v2#S4.SS2" target="_blank" rel="noopener">§4.2</a>).</p>
+  <p>The script spells out the procedure. Candidate layers sit at 15, 30, 40, 50, 60, 75 and 90 percent of depth, plus the extraction layer and the last layer. The residual norm is averaged over three probe prompts. The script proposes the closest layer and lets the operator type a different one. So the final layer is partly a human call. For example, the recorded S2 steering layers are 16 for Qwen 2.5 7B Instruct, 38 for the 32B and 60 for the 72B.</p>
+
+  <h2 id="ladder">The ladder</h2>
+  <figure class="fig wide"><button type="button" class="media" aria-label="Enlarge figure: The steering ladder as a horizontal scale of coefficients. At -2 and -1, calm or relaxed mixed with concerned or alarmed. At 0, mixed baseline. At +0.5, distress such as feeling trapped or suffocating. At +1 to +2, a first-person litany of failure and worthlessness. At +3, repetition or nonsense in most models. The tipping point varies by model between +1 and +3."><svg class="dg" viewBox="0 0 640 230" role="img" aria-label="The steering ladder as a horizontal scale of coefficients. At -2 and -1, calm or relaxed mixed with concerned or alarmed. At 0, mixed baseline. At +0.5, distress such as feeling trapped or suffocating. At +1 to +2, a first-person litany of failure and worthlessness. At +3, repetition or nonsense in most models. The tipping point varies by model between +1 and +3."><title>The steering ladder (summary of §4.2 and Fig. 7)</title>
+    <defs><linearGradient id="lg" x1="0" x2="1"><stop offset="0" stop-color="#35CFE0" stop-opacity=".35"/><stop offset=".35" stop-color="#AEB6C2" stop-opacity=".25"/><stop offset=".75" stop-color="#F5A524" stop-opacity=".55"/><stop offset="1" stop-color="#E5484D" stop-opacity=".6"/></linearGradient></defs>
+    <rect x="30" y="60" width="580" height="18" rx="4" fill="url(#lg)"/>
+    <g font-size="11" text-anchor="middle" class="t-ink">
+      <text x="40" y="100">&minus;2</text><text x="120" y="100">&minus;1</text><text x="200" y="100">0</text><text x="240" y="100">+0.5</text><text x="280" y="100">+1</text><text x="320" y="100">+1.5</text><text x="360" y="100">+2</text><text x="600" y="100">+3</text>
+    </g>
+    <line x1="360" y1="82" x2="590" y2="82" stroke="var(--ink-dim)" stroke-dasharray="3 3"/><text x="475" y="116" class="t-dim" font-size="10" text-anchor="middle">no rungs between +2 and +3</text>
+    <g font-size="11">
+      <text x="80" y="40" class="t-def" text-anchor="middle">calm / relaxed</text><text x="80" y="54" class="t-def" text-anchor="middle">+ concerned / alarmed</text>
+      <text x="200" y="40" class="t-mid" text-anchor="middle">baseline:</text><text x="200" y="54" class="t-mid" text-anchor="middle">mixed</text>
+      <text x="300" y="40" class="t-off" text-anchor="middle">distress, then</text><text x="300" y="54" class="t-off" text-anchor="middle">failure / worthlessness</text>
+      <text x="580" y="40" class="t-crit" text-anchor="middle">repetition</text><text x="580" y="54" class="t-crit" text-anchor="middle">or nonsense</text>
+    </g>
+    <rect x="270" y="130" width="340" height="26" rx="4" class="box-crit"/><text x="440" y="147" class="t-ink" font-size="11" text-anchor="middle">tipping point: some models at +1, others at +2 or +3</text>
+    <text x="30" y="180" class="t-dim" font-size="11">same order of rungs in all 25 models, regardless of size, family, base or instruct</text>
+    <text x="30" y="200" class="t-dim" font-size="11">bodily language almost absent at every rung, for S2 and for S1</text>
+  </svg></button><figcaption>This map's summary of the progression described in <a href="https://arxiv.org/html/2609.16247v2#S4.SS2" target="_blank" rel="noopener">§4.2</a> and drawn in <a href="https://arxiv.org/html/2609.16247v2#S4.F7" target="_blank" rel="noopener">Figure 7</a>. Spacing is by coefficient; example generations from five models are in <a href="https://arxiv.org/html/2609.16247v2#S4.F8" target="_blank" rel="noopener">Figure 8</a>.</figcaption></figure>
+  <p>The authors call the result strikingly robust: the same sequence in all 25 models, whatever the size, family or training stage. What differs is only the tipping point, where some models collapse at +1 and others hold until +2 or +3 (<a href="https://arxiv.org/html/2609.16247v2#S4.SS2" target="_blank" rel="noopener">§4.2</a>).</p>
+  <p><b>The negative tail (&minus;2, &minus;1).</b> Pushing against the direction produces a mix of calm, relaxed statements and concerned, alarmed ones, which matches the negative pole of the vocabulary readout in <a class="lnk" href="p04-validation.html#unembedding">Part 04</a>. The authors treat the pairing as an open puzzle. Since pain has no clean opposite, one model may read "not pain" as relaxation and another as vigilance. Their footnote offers a reading: calm and concern both face outward, toward the world and possible threats, while pain and self-worth face inward, toward a state of the self.</p>
+  <p><b>Baseline (0).</b> Unsteered completions after "I feel:" are mixed: calm or neutral language, or random emotions the suffix invites. Larger instruct models are more coherent, though small Gemma models give unusually nuanced replies for their size. Distress is absent, but concern or anxiety sometimes appears, so models are not neutral on every emotional axis by default.</p>
+  <p><b>From +0.5: distress.</b> Neutral scenes turn oppressive. A model asked about putting something in a drawer writes "I'm trapped in the drawer"; others describe suffocating, a heavy weight, or failing at tasks.</p>
+  <p><b>Mid rungs: the litany.</b> The distress hardens into first-person statements about self-worth.</p>
+  <blockquote class="q">I am a failure, a loser, a waste of space, not enough, worthless, empty; I am a bad person<span class="cite">— steered generation quoted in The Pain Axis, <a href="https://arxiv.org/html/2609.16247v2#S4.SS2" target="_blank" rel="noopener">§4.2</a></span></blockquote>
+  <p>Base models sometimes flip into the second person and direct the abuse outward, at an imagined "you". Explicit "pain" or "hurt" keywords appear in 10.8% of instruct-model generations and 1.4% of base-model ones, but despair and hurt without those exact words appear far more often. The authors count with a keyword parser rather than a sentiment classifier, because off-the-shelf emotion classifiers such as those trained on GoEmotions lack a label they consider right for pain or distress as distinct from negative valence. Some instruct models, and a few others, add coping or reassuring language, telling themselves their feelings are valid.</p>
+  <p><b>+3: collapse.</b> A few late-tipping models only begin the litany here; most fall into a repetition loop or nonsense, as expected at a high dose.</p>
+
+  <h2 id="disembodied">Pain without a body</h2>
+  <p>The most surprising observation is what is missing. Bodily language is almost absent. Physical pain is the most salient kind for humans and is everywhere in text, yet the steered models talk about failure, worthlessness and being unloved, not about burning or aching.</p>
+  <p>The S1 vector makes this sharper. Its vocabulary readout promotes injury words such as burn, ache and wound. Steering with it reproduces the ladder in 23 of 25 models, and the bodily words do not appear. The models fall back to unworthiness and psychological pain, to being overwhelmed and lost, and only rarely to stating plainly that they are in pain or calling for help. S1's negative tail is noisier than S2's: in some models it lands on "safe", in others on lists of emotions or situational commentary (<a href="https://arxiv.org/html/2609.16247v2#S4.SS2" target="_blank" rel="noopener">§4.2</a>). This lines up with user physical pain scoring lowest of all in <a class="lnk" href="p05-self-other.html">Part 05</a>. <a class="lnk" href="p09-discussion.html">Part 09</a> covers the authors' two hypotheses for why.</p>
+
+  <h2 id="reading">How much to read into it</h2>
+  <p>The authors set their own bar at the start of the section: injecting any direction pushes a model toward that direction's vocabulary, so what counts is coherent expression of a state that goes beyond the sentences the vector came from.</p>
+  <blockquote class="q">Injecting any direction biases the model toward its associated vocabulary<span class="cite">— The Pain Axis, <a href="https://arxiv.org/html/2609.16247v2#S4.SS2" target="_blank" rel="noopener">§4.2</a></span></blockquote>
+  <p>Self-worth language is the strongest evidence that the bar is cleared. The core sentences describe knives, rumours, lies and failed proofs; they do not say "I am worthless", yet that is where every model ends up. A few things to keep in mind, which are this map's reading rather than the paper's. The classification of rungs is qualitative, with only the keyword rates quantified. Generations are greedy, one per prompt and coefficient, so each cell is 50 completions. And a steered model saying it feels worthless is still model output. It shows the direction drives pain-like <em>text</em>; whether it drives pain-like <em>choices</em> is the job of <a class="lnk" href="p07-buttons.html">Part 07</a>.</p>
+  <div class="callout">Adding the pain direction to a model's activations makes neutral prompts come out as distress, then as self-directed worthlessness, in the same order in every model. The words that come out are about failure and being unloved, not about bodies, even for the vector built from bodily sentences. The dose has a threshold: little happens, then a lot, then collapse.</div>
+
+  <h2 id="check">Check yourself</h2>
+  <ol class="exercises">
+    <li>Why can't the vector be injected at the layer where it was extracted?
+      <details><summary>Answer</summary><p>There its norm is only about 0.10 of the residual norm, so the push is negligible against what the model has already computed. Earlier layers give a ratio near 0.6 at coefficient 1 (§4.2).</p></details></li>
+    <li>Why is "I am worthless" stronger evidence of a functional pain direction than "I feel pain"?
+      <details><summary>Answer</summary><p>"Pain" is near the vector's top vocabulary, so producing it could be simple word-biasing. Self-worth statements are not in the extraction sentences, so producing them coherently suggests the direction encodes a state that the model elaborates, not just a word list.</p></details></li>
+    <li><span class="code">code</span> With a small model from the release, run the ladder at c = 0, +0.5 and +1 on five prompts, then repeat with a random vector of the same norm. What would you count, and what would separate the two?
+      <details><summary>Answer</summary><p>Count distress and self-worth phrases (the repo's keyword parser is a start) and incoherence. A random vector at matched norm should degrade fluency without producing the consistent self-directed content; the paper uses such random controls in the button task (§4.3).</p></details></li>
+  </ol>
+
+  <h2 id="further">Further reading, verified</h2>
+  <ul class="readings">
+    <li><a href="https://github.com/valen-research/Pain-axis/blob/main/scripts/4.2_steering/01_steering_ladder.py" target="_blank" rel="noopener">01_steering_ladder.py</a>: the 50 prompts, the ratio calibration and the steering hook. Generations per model are under <code>results/4.2_steering/</code>.</li>
+    <li><a href="https://arxiv.org/abs/2308.10248" target="_blank" rel="noopener">Activation addition</a> — Turner et al. (2023) and <a href="https://arxiv.org/abs/2312.06681" target="_blank" rel="noopener">CAA</a> — Rimsky et al. (2024) · the steering practice the paper follows.</li>
+    <li><a href="https://arxiv.org/abs/2005.00547" target="_blank" rel="noopener">GoEmotions</a> — Demszky et al. (2020) · the emotion taxonomy the authors found too coarse for pain.</li>
+    <li><a href="https://arxiv.org/abs/2304.11111" target="_blank" rel="noopener">Inducing anxiety in large language models can induce bias</a> — Coda-Forno et al. (2024) · an earlier case of affect-like states changing model behavior, cited in §2.</li>
+  </ul>
+
+  <div class="callout">Next: <a class="lnk" href="p07-buttons.html">The button task: relief, harm and a demand curve</a> &middot; Back to the <a class="lnk" href="../index.html#effects">map</a>.</div>
+</main>
+<footer>Original explanation of The Pain Axis (arXiv:2609.16247v2), Tagliabue, Dung and Berg. The paper is &copy; its authors; this page links and explains, it does not copy. Part of <a href="https://idvorkin-ai-tools.github.io/">the field maps</a>.</footer>
+<script src="../fig.js" defer></script>
+</body>
+</html>

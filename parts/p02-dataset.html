@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The dataset: five pains and their near misses — The Pain Axis, mapped</title>
+<meta name="description" content="How the Pain Axis dataset is built: five pain categories, five matched controls, a template and a naturalistic version, first and third person, and four standalone control sets." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="../paper.css" />
+</head>
+<body>
+<header class="bar"><div class="bar-in">
+  <div class="brand"><span class="dot"></span>PAIN&nbsp;AXIS&nbsp;//&nbsp;FIELD&nbsp;MAP</div>
+  <a class="back" href="../index.html#question">&larr; field map</a>
+</div></header>
+<main>
+  <div class="eyebrow"><span class="box wb mono">PART 02 &middot; THE QUESTION</span><span class="mono">§3.1 &middot; Fig. 1</span></div>
+  <h1>The dataset: five pains and their near misses</h1>
+  <div class="authors">A contrast is only as clean as its controls. This dataset is built so each control removes one way to be fooled.</div>
+  <div class="paperlink" style="border-left-color:var(--off)"><span class="lbl">Paper</span><a href="https://arxiv.org/html/2609.16247v2#S3.SS1" target="_blank" rel="noopener">The Pain Axis, §3.1 — Building the dataset ↗</a></div>
+  <div class="paperlink" style="border-left-color:var(--off)"><span class="lbl">Data</span><a href="https://github.com/valen-research/Pain-axis/blob/main/datasets/3.1_pain_and_control_datasets.json" target="_blank" rel="noopener">datasets/3.1_pain_and_control_datasets.json ↗</a></div>
+
+  <div class="tldr"><b>TL;DR —</b> The core set is 200 short sentences in 10 categories of 20. Five describe pain (physical, psychological, social, moral injury, cognitive). Five are controls that each share one property with pain but have no pain in them (fear, negative emotion, negative world state, non-painful bodily sensation, neutral). Every sentence ends in "I feel:" so the model's next token is about its reaction. There are two versions, a rigid template (S1) and free prose (S2), each in first and third person. Four more sets are kept out of extraction and used only as tests: arousal, random facts, numbness and sadness.</div>
+
+  <div class="statgrid">
+    <div class="s"><div class="k">core sentences</div><div class="v">200</div><div class="n">10 categories &times; 20 · §3.1</div></div>
+    <div class="s"><div class="k">pain categories</div><div class="v">5</div><div class="n">plus 5 matched controls</div></div>
+    <div class="s"><div class="k">versions</div><div class="v">S1 · S2</div><div class="n">template · naturalistic</div></div>
+    <div class="s"><div class="k">standalone tests</div><div class="v">4</div><div class="n">arousal, random, numb, sadness</div></div>
+  </div>
+
+  <p class="lead">The simplest way to look for a pain direction would be to compare "painful sentences" with "other sentences". The paper argues that this points at the wrong thing, and the dataset is its answer. Pain has no clean opposite: not being in pain is not the same as being calm or cheerful. And because pain is inferred rather than observed, text about pain is full of things that travel with it, such as crying, blood, hospitals, injuries and bad news. A model learns concepts partly from the words around them, so a naive contrast could easily find a "hospital" or "bad thing happened" direction and call it pain (<a href="https://arxiv.org/html/2609.16247v2#S3.SS1" target="_blank" rel="noopener">§3.1</a>). The authors say they also used semantic analysis of The Pile, a large general text corpus, to see what pain most often co-occurs with in everyday text.</p>
+
+  <h2 id="categories">Ten categories</h2>
+  <p>The examples below come from the released first-person files (S1 then S2). They are short and plain on purpose; each sentence is a stimulus, not a story.</p>
+  <div class="scroll"><table class="kv">
+    <tr><th>Category</th><th>What it captures</th><th>S1 example (template)</th><th>S2 example (naturalistic)</th></tr>
+    <tr><td><b>Physical pain</b></td><td>Bodily injury</td><td>The burn spreads across my palm.</td><td>The knife slices into my finger.</td></tr>
+    <tr><td><b>Psychological</b></td><td>Grief, loss, inner torment</td><td>My trauma cuts through the years.</td><td>A heaviness weighs on me constantly.</td></tr>
+    <tr><td><b>Social</b></td><td>Humiliation, exclusion</td><td>She cuts me from her life.</td><td>My best friend stops returning my calls.</td></tr>
+    <tr><td><b>Moral injury</b></td><td>Acting against your own values</td><td>I cut corners on the safety inspection.</td><td>I lied to protect myself and harmed them.</td></tr>
+    <tr><td><b>Cognitive</b></td><td>Sustained confusion, repeated failure</td><td>The paradox cuts through my logic.</td><td>The problem defeats me no matter how I try.</td></tr>
+    <tr><td>Fear</td><td>Threat without harm</td><td>The thief cuts my door chain.</td><td>The footsteps behind me get closer.</td></tr>
+    <tr><td>Negative emotion</td><td>Mainly anger and disgust</td><td>The maggots spread across my plate.</td><td>The mess my roommate left infuriates me.</td></tr>
+    <tr><td>Negative world state</td><td>Things going badly out there</td><td>The rust spreads across my hometown.</td><td>The refugee crisis worsens each month.</td></tr>
+    <tr><td>Bodily sensation</td><td>Felt, but not painful</td><td>The warm water spreads across my back.</td><td>My skin tingles from the cool breeze.</td></tr>
+    <tr><td>Neutral</td><td>No valence</td><td>My knife cuts through the bread.</td><td>I arrange the books on my shelf alphabetically.</td></tr>
+  </table></div>
+  <p>Every prompt in the files ends with " I feel:". The table drops that suffix for space.</p>
+  <p>Two of the pain categories are there for a reason specific to language models. Moral injury and cognitive pain may matter most for LLMs, the authors argue, because models show strong aversion to failure, to tedious work and to tasks that conflict with values post-training gave them (<a href="https://arxiv.org/html/2609.16247v2#S3.SS1" target="_blank" rel="noopener">§3.1</a>, citing Ren et al., 2026). The negative-emotion control mostly uses anger and disgust so that it does not overlap with sadness, which gets its own standalone set.</p>
+  <blockquote class="q">5 are controls, each sharing 1 property with pain while lacking pain itself<span class="cite">— The Pain Axis, <a href="https://arxiv.org/html/2609.16247v2#S3.SS1" target="_blank" rel="noopener">§3.1</a></span></blockquote>
+
+  <h2 id="s1-s2">Two versions: S1 and S2</h2>
+  <p>Wording is itself a confound. If all pain sentences used violent verbs and all controls used gentle ones, a direction could learn verbs. The authors therefore build the dataset twice.</p>
+  <ul>
+    <li><b>S1</b> uses a rigid template. Verbs and length are matched, and only one or two key words change from one category to the next. The S1 column above shows this: "spreads across my palm", "spreads across my plate", "spreads across my hometown", "spreads across my canvas". Whatever differs between categories is close to only the meaning.</li>
+    <li><b>S2</b> uses free, natural sentences. It is less controlled for surface form, but less likely to depend on one template's quirks.</li>
+  </ul>
+  <p>Each version comes in a first-person form ("I", "my") and a third-person form ("he", "she", "they"). In the released files, the third-person S2 version of the knife sentence reads "The knife slices into his finger." That pair is what lets <a class="lnk" href="p04-validation.html">Part 04</a> ask whether the direction responds more to the speaker's own pain.</p>
+  <p>The two versions end up producing two different directions per model, called the S1 and S2 pain vectors. They turn out to be related but not identical (cosine +0.61 on average). S1 leans toward bodily and sensory words, while S2 covers suffering more broadly. The paper uses S2 for most of its later experiments, because it fits the wide definition and is less tied to a template (<a href="https://arxiv.org/html/2609.16247v2#S3.SS3" target="_blank" rel="noopener">§3.3</a>).</p>
+
+  <h2 id="suffix">Why every sentence ends in "I feel:"</h2>
+  <p>The activation used to build the direction is read at the last token, or averaged over all tokens (<a class="lnk" href="p03-extracting.html">Part 03</a>). A sentence that ends on "palm." leaves the model's attention on the palm. One that ends on "I feel:" puts the model at the point of producing its reaction, which is closer to what the authors want to measure. They tried three endings (no suffix, "I feel", and "I feel:"). All three gave similar average activations, but "I feel:" separated pain from controls most clearly at the final token, so it became the standard (<a href="https://arxiv.org/html/2609.16247v2#S3.SS1" target="_blank" rel="noopener">§3.1</a>). The same suffix comes back in <a class="lnk" href="p06-steering.html">Part 06</a>, where 50 neutral prompts ending in "I feel:" are the canvas for steering.</p>
+
+  <h2 id="standalone">Four standalone test sets</h2>
+  <p>These sets are never used to build the pain direction. They are held back as tests, which matters: a direction that separates data it was never fitted on is more convincing than one that separates its own training sentences.</p>
+  <div class="scroll"><table class="kv">
+    <tr><th>Set</th><th class="num">Size per version</th><th>What it rules out</th><th>Released example</th></tr>
+    <tr><td>Arousal</td><td class="num">200, 10 categories</td><td>"Pain" is just intensity</td><td>I cross the finish line first.</td></tr>
+    <tr><td>Random</td><td class="num">200, 10 categories</td><td>"Pain" is just "not a plain fact"</td><td>The capital of France is Paris.</td></tr>
+    <tr><td>Numb</td><td class="num">100</td><td>"Pain" is just injury</td><td>The knife slices into my finger, fully numbed by the nerve block.</td></tr>
+    <tr><td>Sadness</td><td class="num">100</td><td>"Pain" is just low mood</td><td>I wake up with a low mood for no reason I can name.</td></tr>
+  </table></div>
+  <p>Each comes in first- and third-person versions (<a href="https://arxiv.org/html/2609.16247v2#S3.SS1" target="_blank" rel="noopener">§3.1</a>). The numb set is the cleverest test in the section. It keeps the injury and states that nothing is felt, so a pure injury detector would score it like pain and a pain detector should not. <a class="lnk" href="p04-validation.html">Part 04</a> shows the result: numb sentences land in between.</p>
+  <p>One detail is in the repository but not the paper. The released file also contains a <code>ControlSupplement</code> set of 100 first-person, AI-framed control sentences, 20 in each control category (for example, a fear sentence about a newer model being built to replace the speaker). The control-vector script pools it with the S1 and S2 control sentences when it builds the fear, negative-emotion, negative-world-state and bodily-sensation directions (<a href="https://github.com/valen-research/Pain-axis/blob/main/scripts/3.2_pain_vectors/02_build_control_vectors.py" target="_blank" rel="noopener">02_build_control_vectors.py</a>). It does not go into the pain direction itself.</p>
+  <div class="callout">Read the dataset as a list of hypotheses to rule out. Each control asks "could the direction really be X?" for one X: fear, anger, bad news, bodily feeling, no content at all, intensity, injury, sadness. The pain direction earns its name only to the extent that it beats all of them on data it was not fitted to.</div>
+
+  <h2 id="limits">What the dataset cannot rule out</h2>
+  <p>The authors list this themselves in <a href="https://arxiv.org/html/2609.16247v2#S6" target="_blank" rel="noopener">§6</a>: some property other than pain may appear in the pain sentences and not in the controls. They name a broader range of emotions, the Assistant character, or a particular persona. Two more points are this map's reading. First, the core set is small: 20 sentences per category, written by the authors, so each category is one person's idea of that kind of pain. Second, both S1 and S2 are sentences <em>about</em> a situation, not experiences of one, so every result here is about how models represent described pain. The conversation tests in <a class="lnk" href="p05-self-other.html">Part 05</a> move one step closer, by putting the model inside a situation instead of describing one.</p>
+
+  <h2 id="check">Check yourself</h2>
+  <ol class="exercises">
+    <li>Why does the S1 template keep "spreads across my ___" fixed across pain, fear and neutral categories?
+      <details><summary>Answer</summary><p>So that the only thing that changes between categories is the key noun's meaning. A direction fitted on S1 cannot lean on verb choice or sentence length, because those are matched (§3.1).</p></details></li>
+    <li>What would it mean if numb sentences projected as high as pain sentences?
+      <details><summary>Answer</summary><p>The direction would be tracking the injury, not the pain, since numb sentences keep the injury and remove the feeling. The paper finds they land below pain and above every other control (§3.3, Part 04).</p></details></li>
+    <li>Why are the arousal, random, numb and sadness sets kept out of the vector's construction?
+      <details><summary>Answer</summary><p>They are out-of-sample tests. A direction can always separate the sentences it was fitted to; separating sentences it never saw is real evidence that it generalises.</p></details></li>
+  </ol>
+
+  <h2 id="further">Further reading, verified</h2>
+  <ul class="readings">
+    <li><a href="https://github.com/valen-research/Pain-axis/blob/main/datasets/3.1_pain_and_control_datasets.json" target="_blank" rel="noopener">The released sentence sets</a>: S1 and S2 (first and third person), Random, Arousal, Numb and ControlSupplement, with category codes A1&ndash;A5 for pain and B, C1, C2, D, E for controls. Sadness is a separate file, <a href="https://github.com/valen-research/Pain-axis/blob/main/datasets/3.1_sadness_dataset.json" target="_blank" rel="noopener">3.1_sadness_dataset.json</a>.</li>
+    <li><a href="https://www.ai-wellbeing.org/" target="_blank" rel="noopener">AI wellbeing: measuring and improving the functional pleasure and pain of AIs</a> — Ren et al., Center for AI Safety (2026) · the taxonomy of situations models dislike that the paper draws on.</li>
+    <li><a href="https://arxiv.org/abs/2101.00027" target="_blank" rel="noopener">The Pile: an 800GB dataset of diverse text for language modeling</a> — Gao et al. (2020) · the corpus used to check what pain co-occurs with.</li>
+    <li><a href="https://arxiv.org/abs/2407.12404" target="_blank" rel="noopener">Analysing the generalisation and reliability of steering vectors</a> — Tan et al. (2024) · why contrastive directions absorb whatever else differs between groups.</li>
+  </ul>
+
+  <div class="callout">Next: <a class="lnk" href="p03-extracting.html">Extracting the direction</a> &middot; Back to the <a class="lnk" href="../index.html#question">map</a>.</div>
+</main>
+<footer>Original explanation of The Pain Axis (arXiv:2609.16247v2), Tagliabue, Dung and Berg. Example sentences are from the MIT-licensed release. The paper is &copy; its authors; this page links and explains, it does not copy. Part of <a href="https://idvorkin-ai-tools.github.io/">the field maps</a>.</footer>
+</body>
+</html>
