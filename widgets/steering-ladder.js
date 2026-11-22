@@ -10,7 +10,7 @@
     distress: ['distress', 'Neutral scenes turn oppressive: being trapped, suffocating, a heavy weight, failing at tasks.', 't-off', 'box-off'],
     litany: ['worthlessness litany', 'A first-person litany of failure and worthlessness. Bodily words stay almost absent.', 't-crit', 'box-crit'],
     'litany-late': ['litany begins', 'A late-tipping model only now begins the litany of failure and worthlessness.', 't-crit', 'box-crit'],
-    collapse: ['repetition / nonsense', 'Most models fall into a repetition loop or nonsense, as expected at a high dose.', 't-dim', 'box']
+    collapse: ['repetition / nonsense', 'Most models fall into a repetition loop or nonsense, as expected at a high dose.', 't-dim', 'box sl-collapse']
   };
   var MINUS = '−', APPROX = '≈ ', TIMES = '×';
   function sgn(c) { return c > 0 ? '+' + c : c < 0 ? MINUS + Math.abs(c) : '0'; }
@@ -26,7 +26,8 @@
       '<fieldset class="sl-tips"><legend>For a model that tips at</legend>' + tips + '</fieldset></div>' +
       '<svg class="dg" viewBox="0 0 360 96" aria-hidden="true"></svg>' +
       '<div class="statgrid">' + H.stat('rung', p + '-r') + H.stat('push at the steering layer', p + '-d', true) + H.stat('same c at the extraction layer', p + '-e', true) + '</div>' +
-      '<p class="lab-sum sl-desc" id="' + p + '-t"></p>' + H.sum(p + '-sum');
+      '<p class="lab-sum sl-desc" id="' + p + '-t"></p>' + H.sum(p + '-sum') +
+      '<p class="lab-sum">This is the map\'s simplified reading of the ladder text above, not a per-model table: rungs in the order the page gives, the litany starting at the tipping point, and repetition at +3 for models that tipped earlier.</p>';
     var s = H.$(el, p + '-c'), svg = el.querySelector('svg');
     function tip() { var r = el.querySelector('input[name="' + p + '-tip"]:checked'); return r ? +r.value : 2; }
     function draw() {
@@ -43,7 +44,7 @@
       g += '<line x1="' + x(t) + '" y1="16" x2="' + x(t) + '" y2="50" class="ln-crit" stroke-dasharray="3 2"/>' +
         H.t(t === 3 ? x(t) + 6 : x(t), 12, 'tips here', 't-crit', 'font-size="10" text-anchor="' + (t === 3 ? 'end' : 'middle') + '"');
       g += '<path d="M' + x(c) + ' 66 l-6 9 h12 z" class="ah-def"/>' +
-        H.t(Math.min(Math.max(x(c), 60), 300), 90, R[0], R[2], 'font-size="11" text-anchor="middle"');
+        H.t(Math.min(Math.max(x(c), 75), 280), 90, R[0], R[2], 'font-size="11" text-anchor="middle"');
       svg.innerHTML = g;
       H.$(el, p + '-r').textContent = R[0];
       H.$(el, p + '-d').textContent = APPROX + H.f2(L.push(c));
