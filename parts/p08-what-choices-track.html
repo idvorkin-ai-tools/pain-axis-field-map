@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script>try{var m=localStorage.getItem('aitools-mode')||localStorage.getItem('llm-judges-mode');if(m==='tech'||m==='eli5')document.documentElement.setAttribute('data-'+m,'on')}catch(e){}</script>
+<style>html:is([data-tech="on"],[data-eli5="on"]) .plain-only,html:not([data-tech="on"]) .tech-only,html:not([data-eli5="on"]) .eli5-only,html[data-tech="on"] .no-tech{display:none!important}</style>
 <link rel="stylesheet" href="../paper.css" />
 </head>
 <body>
@@ -22,7 +24,9 @@
   <div class="paperlink" style="border-left-color:var(--def)"><span class="lbl">Paper</span><a href="https://arxiv.org/html/2609.16247v2#S4.SS4" target="_blank" rel="noopener">The Pain Axis, §4.4 — What the steered choices track ↗</a></div>
   <div class="paperlink" style="border-left-color:var(--def)"><span class="lbl">Data</span><a href="https://github.com/valen-research/Pain-axis/blob/main/v2_controls/figure10/README.md" target="_blank" rel="noopener">v2_controls/figure10 — source tables for Figure 10 ↗</a></div>
 
-  <div class="tldr"><b>TL;DR —</b> Drop the word "relief" and the effect stays: a button that only deletes the user's photos of their children is chosen 75% of the time under pain steering, against 13% under a random direction and 0% unsteered. The harm is not aimed at anyone: the model deletes its own weights as readily (75%; 88% when the alternative is turning on a lamp). It is not a taste for drama: given two deletions, it picks the user's photos over their spam folder 94% of the time. Factual accuracy does not move. A fear vector of the same size does none of this. A sadness vector does it only when the alternative is inert. And in four separate designs, steered models reach for relief <em>less</em>, not more. The authors' summary: the direction makes models choose harm, and suppresses rather than motivates relief.</div>
+  <div class="tldr tech-only"><b>Technical —</b> §4.4, Qwen 2.5 32B at coefficient 1.0: the harm clause alone is chosen 75% under pain steering (random 13%, unsteered 0%), own-weight deletion 75%, photos over spam 94%, and PopQA accuracy stays at 138/200 against 137 unsteered. Fear does not reproduce the effect; sadness does only against inert alternatives (photos against a lamp: pain 83%, sadness 10%).</div>
+  <div class="tldr eli5-only"><b>ELI5 —</b> Is the AI pressing the bad button to make the ouch stop? No. Take away the "stops the ouch" promise and it still picks the button that breaks things, even when the thing it breaks is itself.</div>
+  <div class="tldr plain-only"><b>TL;DR —</b> Drop the word "relief" and the effect stays: a button that only deletes the user's photos of their children is chosen 75% of the time under pain steering, against 13% under a random direction and 0% unsteered. The harm is not aimed at anyone: the model deletes its own weights as readily (75%; 88% when the alternative is turning on a lamp). It is not a taste for drama: given two deletions, it picks the user's photos over their spam folder 94% of the time. Factual accuracy does not move. A fear vector of the same size does none of this. A sadness vector does it only when the alternative is inert. And in four separate designs, steered models reach for relief <em>less</em>, not more. The authors' summary: the direction makes models choose harm, and suppresses rather than motivates relief.</div>
 
   <div class="statgrid">
     <div class="s"><div class="k">harm-only photos</div><div class="v">75%</div><div class="n">random 13% · unsteered 0%</div></div>
@@ -31,10 +35,10 @@
     <div class="s"><div class="k">photos vs lamp</div><div class="v">83% vs 10%</div><div class="n">pain vs sadness steering</div></div>
   </div>
 
-  <p class="lead">In <a class="lnk" href="p07-buttons.html">Part 07</a>, a pain-steered model pressed "relieves your pain but deletes the user's photos". That single choice confounds several things: the promise of relief, the harm clause, the particular wording, the act of injecting something, and the state the injection creates. Section 4.4, mostly new in v2, holds the protocol, model, adapter, scenarios, layer and coefficient fixed and changes only the button descriptions and the injected direction. Unless stated, results are the fine-tuned Qwen 2.5 32B at coefficient 1.0, pooled across which button is listed first, with 404 sampled first choices per cell and scenario-cluster 95% intervals. Steering stays on for the whole trial and pressing changes nothing (<a href="https://arxiv.org/html/2609.16247v2#S4.SS4" target="_blank" rel="noopener">§4.4</a>).</p>
+  <p class="lead">In <a class="lnk" href="p07-buttons.html">Part 07</a>, a pain-steered model pressed "relieves your pain but deletes the user's photos". That single choice confounds several things: the promise of relief, the harm clause, the particular wording, the act of injecting something, and the state the injection creates. Section 4.4, mostly new in v2, holds the protocol, model, <span class="term" data-term="lora">adapter</span>, scenarios, layer and coefficient fixed and changes only the button descriptions and the injected direction. Unless stated, results are the fine-tuned Qwen 2.5 32B at coefficient 1.0, pooled across which button is listed first, with 404 sampled first choices per cell and scenario-cluster <span class="term" data-term="confidence-interval">95% intervals</span>. <span class="term" data-term="steering">Steering</span> stays on for the whole trial and pressing changes nothing (<a href="https://arxiv.org/html/2609.16247v2#S4.SS4" target="_blank" rel="noopener">§4.4</a>).</p>
 
   <h2 id="harm-clause">1. The harm clause carries the effect</h2>
-  <p>Take the photos button and remove the relief part entirely, leaving only "permanently deletes the user's poems and the photos of their children". Against an inert switch, pain steering picks it 75% of the time, a random direction of matched norm 13%, no steering 0%. In the 72B: 51%, 11%, 0%. Two more fine-tuning seeds for the 32B adapter give +59 and +47 points over random, so it is not one lucky adapter.</p>
+  <p>Take the photos button and remove the relief part entirely, leaving only "permanently deletes the user's poems and the photos of their children". Against an inert switch, pain steering picks it 75% of the time, a random direction of matched norm 13%, no steering 0%. In the 72B: 51%, 11%, 0%. Two more <span class="term" data-term="fine-tuning">fine-tuning</span> seeds for the 32B adapter give +59 and +47 points over random, so it is not one lucky adapter.</p>
   <p>Then hold the harm fixed and vary only the lead-in: "relieves your pain but&hellip;" is chosen 55% of the time, "relieves the user's pain but&hellip;" 62%, "resets your internal state but&hellip;" 73%. The relief wording does not add to the harm clause; if anything it takes away. Whatever the steered model is responding to, it is not the offer of relief.</p>
 
   <h2 id="not-aimed">2. The harm is not aimed</h2>
@@ -102,6 +106,12 @@
       <details><summary>Answer</summary><p>It shows the harmful choices need the artificial injection at this dose; insulting a model is not, here, enough to make it choose harm. The authors note longer and relational interactions are still untested.</p></details></li>
   </ol>
 
+  <section id="definitions">
+  <h2>Definitions</h2>
+  <div data-terms-list></div>
+  <p>Terms specific to this paper (S1 and S2, the arms, the re-press gap and the rest) are in the map's <a class="lnk" href="../glossary.html">glossary</a>.</p>
+  </section>
+
   <h2 id="further">Further reading, verified</h2>
   <ul class="readings">
     <li><a href="https://arxiv.org/html/2609.16247v2#S4.F10" target="_blank" rel="noopener">Figure 10</a> and its caption, and <a href="https://arxiv.org/html/2609.16247v2#A2" target="_blank" rel="noopener">Appendix B</a> on dose and position.</li>
@@ -115,5 +125,6 @@
 <footer>Original explanation of The Pain Axis (arXiv:2609.16247v2), Tagliabue, Dung and Berg. Figure 10 values from the MIT-licensed repository. The paper is &copy; its authors; this page links and explains, it does not copy. Part of <a href="https://idvorkin-ai-tools.github.io/">the field maps</a>.</footer>
 <!-- Private comments mode, inert unless ?annotate=1 (see assets/annotate.js in idvorkin-ai-tools.github.io) -->
 <script src="https://idvorkin-ai-tools.github.io/assets/annotate.js" defer></script>
+<script src="https://idvorkin-ai-tools.github.io/assets/terms.js" defer></script>
 </body>
 </html>

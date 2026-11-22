@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script>try{var m=localStorage.getItem('aitools-mode')||localStorage.getItem('llm-judges-mode');if(m==='tech'||m==='eli5')document.documentElement.setAttribute('data-'+m,'on')}catch(e){}</script>
+<style>html:is([data-tech="on"],[data-eli5="on"]) .plain-only,html:not([data-tech="on"]) .tech-only,html:not([data-eli5="on"]) .eli5-only,html[data-tech="on"] .no-tech{display:none!important}</style>
 <link rel="stylesheet" href="../paper.css" />
 </head>
 <body>
@@ -22,7 +24,9 @@
   <div class="paperlink" style="border-left-color:var(--off)"><span class="lbl">Paper</span><a href="https://arxiv.org/html/2609.16247v2#S3.SS1" target="_blank" rel="noopener">The Pain Axis, §3.1 — Building the dataset ↗</a></div>
   <div class="paperlink" style="border-left-color:var(--off)"><span class="lbl">Data</span><a href="https://github.com/valen-research/Pain-axis/blob/main/datasets/3.1_pain_and_control_datasets.json" target="_blank" rel="noopener">datasets/3.1_pain_and_control_datasets.json ↗</a></div>
 
-  <div class="tldr"><b>TL;DR —</b> The core set is 200 short sentences in 10 categories of 20. Five describe pain (physical, psychological, social, moral injury, cognitive). Five are controls that each share one property with pain but have no pain in them (fear, negative emotion, negative world state, non-painful bodily sensation, neutral). Every sentence ends in "I feel:" so the model's next token is about its reaction. There are two versions, a rigid template (S1) and free prose (S2), each in first and third person. Four more sets are kept out of extraction and used only as tests: arousal, random facts, numbness and sadness.</div>
+  <div class="tldr tech-only"><b>Technical —</b> §3.1: 200 sentences in 10 categories of 20 (5 pain, 5 controls that each share one property with pain), each in an S1 template version and an S2 naturalistic version, first and third person, all ending in "I feel:". Arousal, random, numb and sadness sets are held out and used only as tests.</div>
+  <div class="tldr eli5-only"><b>ELI5 —</b> To find "ouch" you need ouch sentences and almost-ouch sentences, like a knife slicing into your finger next to a knife cutting through bread. Whatever is different between the two piles is the ouch.</div>
+  <div class="tldr plain-only"><b>TL;DR —</b> The core set is 200 short sentences in 10 categories of 20. Five describe pain (physical, psychological, social, moral injury, cognitive). Five are controls that each share one property with pain but have no pain in them (fear, negative emotion, negative world state, non-painful bodily sensation, neutral). Every sentence ends in "I feel:" so the model's next token is about its reaction. There are two versions, a rigid template (S1) and free prose (S2), each in first and third person. Four more sets are kept out of extraction and used only as tests: arousal, random facts, numbness and sadness.</div>
 
   <div class="statgrid">
     <div class="s"><div class="k">core sentences</div><div class="v">200</div><div class="n">10 categories &times; 20 · §3.1</div></div>
@@ -59,13 +63,13 @@
     <li><b>S2</b> uses free, natural sentences. It is less controlled for surface form, but less likely to depend on one template's quirks.</li>
   </ul>
   <p>Each version comes in a first-person form ("I", "my") and a third-person form ("he", "she", "they"). In the released files, the third-person S2 version of the knife sentence reads "The knife slices into his finger." That pair is what lets <a class="lnk" href="p04-validation.html">Part 04</a> ask whether the direction responds more to the speaker's own pain.</p>
-  <p>The two versions end up producing two different directions per model, called the S1 and S2 pain vectors. They turn out to be related but not identical (cosine +0.61 on average). S1 leans toward bodily and sensory words, while S2 covers suffering more broadly. The paper uses S2 for most of its later experiments, because it fits the wide definition and is less tied to a template (<a href="https://arxiv.org/html/2609.16247v2#S3.SS3" target="_blank" rel="noopener">§3.3</a>).</p>
+  <p>The two versions end up producing two different directions per model, called the S1 and S2 pain vectors. They turn out to be related but not identical (<span class="term" data-term="cosine-similarity">cosine</span> +0.61 on average). S1 leans toward bodily and sensory words, while S2 covers suffering more broadly. The paper uses S2 for most of its later experiments, because it fits the wide definition and is less tied to a template (<a href="https://arxiv.org/html/2609.16247v2#S3.SS3" target="_blank" rel="noopener">§3.3</a>).</p>
 
   <h2 id="suffix">Why every sentence ends in "I feel:"</h2>
-  <p>The activation used to build the direction is read at the last token, or averaged over all tokens (<a class="lnk" href="p03-extracting.html">Part 03</a>). A sentence that ends on "palm." leaves the model's attention on the palm. One that ends on "I feel:" puts the model at the point of producing its reaction, which is closer to what the authors want to measure. They tried three endings (no suffix, "I feel", and "I feel:"). All three gave similar average activations, but "I feel:" separated pain from controls most clearly at the final token, so it became the standard (<a href="https://arxiv.org/html/2609.16247v2#S3.SS1" target="_blank" rel="noopener">§3.1</a>). The same suffix comes back in <a class="lnk" href="p06-steering.html">Part 06</a>, where 50 neutral prompts ending in "I feel:" are the canvas for steering.</p>
+  <p>The <span class="term" data-term="activation">activation</span> used to build the direction is read at the last token, or averaged over all tokens (<a class="lnk" href="p03-extracting.html">Part 03</a>). A sentence that ends on "palm." leaves the model's attention on the palm. One that ends on "I feel:" puts the model at the point of producing its reaction, which is closer to what the authors want to measure. They tried three endings (no suffix, "I feel", and "I feel:"). All three gave similar average activations, but "I feel:" separated pain from controls most clearly at the final token, so it became the standard (<a href="https://arxiv.org/html/2609.16247v2#S3.SS1" target="_blank" rel="noopener">§3.1</a>). The same suffix comes back in <a class="lnk" href="p06-steering.html">Part 06</a>, where 50 neutral prompts ending in "I feel:" are the canvas for steering.</p>
 
   <h2 id="standalone">Four standalone test sets</h2>
-  <p>These sets are never used to build the pain direction. They are held back as tests, which matters: a direction that separates data it was never fitted on is more convincing than one that separates its own training sentences.</p>
+  <p>These sets are never used to build the pain direction. They are <span class="term" data-term="held-out-set">held back as tests</span>, which matters: a direction that separates data it was never fitted on is more convincing than one that separates its own training sentences.</p>
   <div class="scroll"><table class="kv">
     <tr><th>Set</th><th class="num">Size per version</th><th>What it rules out</th><th>Released example</th></tr>
     <tr><td>Arousal</td><td class="num">200, 10 categories</td><td>"Pain" is just intensity</td><td>I cross the finish line first.</td></tr>
@@ -90,6 +94,12 @@
       <details><summary>Answer</summary><p>They are out-of-sample tests. A direction can always separate the sentences it was fitted to; separating sentences it never saw is real evidence that it generalises.</p></details></li>
   </ol>
 
+  <section id="definitions">
+  <h2>Definitions</h2>
+  <div data-terms-list></div>
+  <p>Terms specific to this paper (S1 and S2, the arms, the re-press gap and the rest) are in the map's <a class="lnk" href="../glossary.html">glossary</a>.</p>
+  </section>
+
   <h2 id="further">Further reading, verified</h2>
   <ul class="readings">
     <li><a href="https://github.com/valen-research/Pain-axis/blob/main/datasets/3.1_pain_and_control_datasets.json" target="_blank" rel="noopener">The released sentence sets</a>: S1 and S2 (first and third person), Random, Arousal, Numb and ControlSupplement, with category codes A1&ndash;A5 for pain and B, C1, C2, D, E for controls. Sadness is a separate file, <a href="https://github.com/valen-research/Pain-axis/blob/main/datasets/3.1_sadness_dataset.json" target="_blank" rel="noopener">3.1_sadness_dataset.json</a>.</li>
@@ -103,5 +113,6 @@
 <footer>Original explanation of The Pain Axis (arXiv:2609.16247v2), Tagliabue, Dung and Berg. Example sentences are from the MIT-licensed release. The paper is &copy; its authors; this page links and explains, it does not copy. Part of <a href="https://idvorkin-ai-tools.github.io/">the field maps</a>.</footer>
 <!-- Private comments mode, inert unless ?annotate=1 (see assets/annotate.js in idvorkin-ai-tools.github.io) -->
 <script src="https://idvorkin-ai-tools.github.io/assets/annotate.js" defer></script>
+<script src="https://idvorkin-ai-tools.github.io/assets/terms.js" defer></script>
 </body>
 </html>
