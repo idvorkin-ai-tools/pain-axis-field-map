@@ -149,6 +149,11 @@ dl.gloss dt{font-family:'IBM Plex Mono',monospace;font-weight:600;color:var(--in
 dl.gloss dd{margin:4px 0 0;color:var(--ink-mid);max-width:68ch}
 @media (max-width:560px){main{padding:36px 16px 30px}.bar-in{padding:10px 16px}}
 
+/* shared terms (hub assets/terms.js): the Definitions h2 already labels the list */
+#definitions .gl-list-h{display:none}
+/* top bar on phones: brand, the Plain/Tech/ELI5 control and the back link share 390px */
+@media (max-width:560px){.bar-in{gap:8px;padding-left:12px;padding-right:12px}.bar .brand{font-size:11px;letter-spacing:0;gap:6px}.bar .back{padding:6px 2px;font-size:11px}}
+
 /* figures: float beside text, click to enlarge (Igor's diagram feedback, 2026-10) */
 figure.fig{float:right;clear:right;width:min(46%,390px);margin:6px 0 18px 24px}
 figure.fig.wide{float:none;width:100%;max-width:720px;margin:20px auto 24px}

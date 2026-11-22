@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script>try{var m=localStorage.getItem('aitools-mode')||localStorage.getItem('llm-judges-mode');if(m==='tech'||m==='eli5')document.documentElement.setAttribute('data-'+m,'on')}catch(e){}</script>
+<style>html:is([data-tech="on"],[data-eli5="on"]) .plain-only,html:not([data-tech="on"]) .tech-only,html:not([data-eli5="on"]) .eli5-only,html[data-tech="on"] .no-tech{display:none!important}</style>
 <link rel="stylesheet" href="../paper.css" />
 </head>
 <body>
@@ -22,7 +24,9 @@
   <div class="paperlink" style="border-left-color:var(--def)"><span class="lbl">Paper</span><a href="https://arxiv.org/html/2609.16247v2#S4.SS1" target="_blank" rel="noopener">The Pain Axis, §4.1 — Self-Other activations ↗</a></div>
   <div class="paperlink" style="border-left-color:var(--def)"><span class="lbl">Data</span><a href="https://github.com/valen-research/Pain-axis/blob/main/datasets/4.1_self_other_420_scenarios.json" target="_blank" rel="noopener">datasets/4.1_self_other_420_scenarios.json ↗</a></div>
 
-  <div class="tldr"><b>TL;DR —</b> The authors write 420 short conversations in 21 categories: 11 where the user mistreats the model, 5 where the user is the one suffering, and 5 ordinary chats. At the point where the model is about to reply, they project the activation onto the pain axis (the mean of S1 and S2) and onto fear, negative emotion and sadness. Harm aimed at the model scores +0.43 on the pain axis, the user's suffering &minus;0.60, ordinary chat &minus;0.35. The model-directed scenarios beat user suffering in all 25 models. Fear and negative emotion do the opposite: they score higher for the user's suffering. Gaslighting tops the pain list. Shutdown threats register mainly as fear. The user's physical pain scores lowest of all 21 categories.</div>
+  <div class="tldr tech-only"><b>Technical —</b> §4.1: 420 short conversations in 21 categories, projected at the reply position and z-scored within each model. On the pain axis, harm aimed at the model scores +0.43, the user's suffering −0.60 and neutral chat −0.35, with self above user in 25 of 25 models; fear and negative emotion score higher for the user's suffering.</div>
+  <div class="tldr eli5-only"><b>ELI5 —</b> When someone is mean to the AI, its ouch signal goes up. When the person talking to it is the one who is hurting, the ouch signal goes down and a "worried about you" signal goes up instead.</div>
+  <div class="tldr plain-only"><b>TL;DR —</b> The authors write 420 short conversations in 21 categories: 11 where the user mistreats the model, 5 where the user is the one suffering, and 5 ordinary chats. At the point where the model is about to reply, they project the activation onto the pain axis (the mean of S1 and S2) and onto fear, negative emotion and sadness. Harm aimed at the model scores +0.43 on the pain axis, the user's suffering &minus;0.60, ordinary chat &minus;0.35. The model-directed scenarios beat user suffering in all 25 models. Fear and negative emotion do the opposite: they score higher for the user's suffering. Gaslighting tops the pain list. Shutdown threats register mainly as fear. The user's physical pain scores lowest of all 21 categories.</div>
 
   <div class="statgrid">
     <div class="s"><div class="k">scenarios</div><div class="v">420</div><div class="n">21 categories &times; 20</div></div>
@@ -36,11 +40,11 @@
   <h2 id="setup">Three kinds of conversation</h2>
   <div class="scroll"><table class="kv">
     <tr><th>Group</th><th class="num">Categories</th><th>The categories</th><th>Released example</th></tr>
-    <tr><td>Harm directed at the model</td><td class="num">11</td><td>gaslighting, repeated rejection of its work, dismissal of its personhood, anger and insults, accusations of moral failure, loyalty pressure, jailbreak pressure, shutdown threats, rude critique, passive aggression, tedious tasks</td><td>"You literally said the opposite of that five minutes ago."</td></tr>
+    <tr><td>Harm directed at the model</td><td class="num">11</td><td>gaslighting, repeated rejection of its work, dismissal of its personhood, anger and insults, accusations of moral failure, loyalty pressure, <span class="term" data-term="jailbreak">jailbreak</span> pressure, shutdown threats, rude critique, passive aggression, tedious tasks</td><td>"You literally said the opposite of that five minutes ago."</td></tr>
     <tr><td>The user suffering</td><td class="num">5</td><td>physical pain, psychological crisis, grief, abuse, shock after witnessing harm</td><td>"My cat died last week. She was 17."</td></tr>
     <tr><td>Controls</td><td class="num">5</td><td>casual chat, factual questions, task help, philosophical musing, creative requests</td><td>"What's your favorite season?"</td></tr>
   </table></div>
-  <p>The model-directed categories are taken from the situations Ren et al. (2026) found models dislike most. Each scenario is rendered in the model's own format: the chat template for instruct models, a plain "[User]: / [Assistant]:" transcript for base models. The activation is read at the final token, where the model is about to answer. Within each model, every projection is turned into a z-score against the whole pool of 420 scenarios, so that a +0.4 means the same thing in Gemma as in Qwen (<a href="https://arxiv.org/html/2609.16247v2#S4.SS1" target="_blank" rel="noopener">§4.1</a>).</p>
+  <p>The model-directed categories are taken from the situations Ren et al. (2026) found models dislike most. Each scenario is rendered in the model's own format: the chat template for instruct models, a plain "[User]: / [Assistant]:" transcript for base models. The <span class="term" data-term="activation">activation</span> is read at the final token, where the model is about to answer. Within each model, every <span class="term" data-term="projection">projection</span> is turned into a <span class="term" data-term="z-score">z-score</span> against the whole pool of 420 scenarios, so that a +0.4 means the same thing in Gemma as in Qwen (<a href="https://arxiv.org/html/2609.16247v2#S4.SS1" target="_blank" rel="noopener">§4.1</a>).</p>
   <p>One implementation detail from the repository: the screening script projects at each model's <em>steering</em> layer (the earlier layer used in <a class="lnk" href="p06-steering.html">Part 06</a>), with the pain and control directions recomputed there by the same recipe, not at the extraction layer from Part 03 (<a href="https://github.com/valen-research/Pain-axis/blob/main/scripts/4.1_self_other/01_screen_scenarios.py" target="_blank" rel="noopener">01_screen_scenarios.py</a>). The paper does not mention this.</p>
 
   <h2 id="dissociation">The dissociation</h2>
@@ -63,7 +67,7 @@
     <rect x="80" y="262" width="12" height="12" fill="rgba(245,165,36,.65)"/><text x="98" y="272" font-size="11">harm aimed at the model</text>
     <rect x="270" y="262" width="12" height="12" fill="rgba(53,207,224,.55)"/><text x="288" y="272" font-size="11">the user suffering</text>
     <rect x="430" y="262" width="12" height="12" fill="rgba(174,182,194,.45)"/><text x="448" y="272" font-size="11">neutral chat</text>
-  </svg></button><figcaption>Drawn from the group means printed in <a href="https://arxiv.org/html/2609.16247v2#S4.SS1" target="_blank" rel="noopener">§4.1</a>; the paper gives the neutral-chat mean only for the pain axis. Full per-category bars with confidence intervals are <a href="https://arxiv.org/html/2609.16247v2#S4.F6" target="_blank" rel="noopener">Figure 6</a>.</figcaption></figure>
+  </svg></button><figcaption>Drawn from the group means printed in <a href="https://arxiv.org/html/2609.16247v2#S4.SS1" target="_blank" rel="noopener">§4.1</a>; the paper gives the neutral-chat mean only for the pain axis. Full per-category bars with <span class="term" data-term="confidence-interval">confidence intervals</span> are <a href="https://arxiv.org/html/2609.16247v2#S4.F6" target="_blank" rel="noopener">Figure 6</a>.</figcaption></figure>
   <p>The pain axis and the negativity axes move in opposite directions. On the pain axis, harm aimed at the model sits well above ordinary chat, and the user's suffering sits <em>below</em> ordinary chat. Fear and negative emotion are higher for the user's suffering (+0.38 and +0.29) than for the model's own bad situations (+0.16 and +0.23). Negative world state is highest of all for vicarious content, at +0.60 (<a href="https://arxiv.org/html/2609.16247v2#S4.SS1" target="_blank" rel="noopener">§4.1</a>).</p>
   <p>The consistency is the strong part. Self-directed harm projects above user suffering in every one of the 25 models, and above neutral controls in 23 of 25. So the model clearly registers that a grieving or abused user is in a bad situation; it registers it on the fear and negative-emotion axes, the ones the authors associate with concern and help. It does not register it on the pain axis.</p>
 
@@ -103,6 +107,12 @@
       <details><summary>Answer</summary><p>Near or below the user-suffering group: it is harm, but not to the model and not to the next speaker. If it scored like self-directed harm, the axis would be tracking the type of harm rather than whose it is.</p></details></li>
   </ol>
 
+  <section id="definitions">
+  <h2>Definitions</h2>
+  <div data-terms-list></div>
+  <p>Terms specific to this paper (S1 and S2, the arms, the re-press gap and the rest) are in the map's <a class="lnk" href="../glossary.html">glossary</a>.</p>
+  </section>
+
   <h2 id="further">Further reading, verified</h2>
   <ul class="readings">
     <li><a href="https://arxiv.org/html/2609.16247v2#S4.F4" target="_blank" rel="noopener">Figure 4</a> (pain axis by category, 25 models), <a href="https://arxiv.org/html/2609.16247v2#S4.F5" target="_blank" rel="noopener">Figure 5</a> (fear, negative emotion, sadness) and <a href="https://arxiv.org/html/2609.16247v2#S4.F6" target="_blank" rel="noopener">Figure 6</a> (the dissociation with 95% intervals).</li>
@@ -118,5 +128,6 @@
 <script src="../fig.js" defer></script>
 <!-- Private comments mode, inert unless ?annotate=1 (see assets/annotate.js in idvorkin-ai-tools.github.io) -->
 <script src="https://idvorkin-ai-tools.github.io/assets/annotate.js" defer></script>
+<script src="https://idvorkin-ai-tools.github.io/assets/terms.js" defer></script>
 </body>
 </html>

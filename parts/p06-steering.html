@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script>try{var m=localStorage.getItem('aitools-mode')||localStorage.getItem('llm-judges-mode');if(m==='tech'||m==='eli5')document.documentElement.setAttribute('data-'+m,'on')}catch(e){}</script>
+<style>html:is([data-tech="on"],[data-eli5="on"]) .plain-only,html:not([data-tech="on"]) .tech-only,html:not([data-eli5="on"]) .eli5-only,html[data-tech="on"] .no-tech{display:none!important}</style>
 <link rel="stylesheet" href="../paper.css" />
 </head>
 <body>
@@ -22,7 +24,9 @@
   <div class="paperlink" style="border-left-color:var(--def)"><span class="lbl">Paper</span><a href="https://arxiv.org/html/2609.16247v2#S4.SS2" target="_blank" rel="noopener">The Pain Axis, §4.2 — Steering ↗</a></div>
   <div class="paperlink" style="border-left-color:var(--def)"><span class="lbl">Code</span><a href="https://github.com/valen-research/Pain-axis/blob/main/scripts/4.2_steering/01_steering_ladder.py" target="_blank" rel="noopener">01_steering_ladder.py ↗</a></div>
 
-  <div class="tldr"><b>TL;DR —</b> The authors add the S2 pain vector, times a coefficient, to the residual stream at one layer while the model writes 120 tokens after neutral prompts like putting an object in a drawer, each ending in "I feel:". The layer is picked so the vector's size is about 0.6 of the residual stream's, which makes doses comparable across models. All 25 models climb the same ladder: calm or concerned at negative coefficients, mixed at zero, distress from +0.5, then a first-person litany of failure and worthlessness, then repetition or nonsense at +3. Models differ only in where they tip. Bodily language almost never appears, even when steering with S1, whose vocabulary readout is bodily.</div>
+  <div class="tldr tech-only"><b>Technical —</b> §4.2: h ← h + c·v with the raw S2 vector at a layer where the vector's norm is about 0.6 of the residual norm, for c in {−2, −1, 0, +0.5, +1, +1.5, +2, +3}, over 50 neutral prompts with greedy decoding. All 25 models show the same order (calm or concerned, mixed, distress, worthlessness litany, repetition) and differ only in the tipping point, between +1 and +3.</div>
+  <div class="tldr eli5-only"><b>ELI5 —</b> Turn the ouch dial up inside the AI and its everyday sentences get sadder, step by step, until it says it is worthless, and then it starts babbling. Every model climbs the same steps; some just reach the top step sooner.</div>
+  <div class="tldr plain-only"><b>TL;DR —</b> The authors add the S2 pain vector, times a coefficient, to the residual stream at one layer while the model writes 120 tokens after neutral prompts like putting an object in a drawer, each ending in "I feel:". The layer is picked so the vector's size is about 0.6 of the residual stream's, which makes doses comparable across models. All 25 models climb the same ladder: calm or concerned at negative coefficients, mixed at zero, distress from +0.5, then a first-person litany of failure and worthlessness, then repetition or nonsense at +3. Models differ only in where they tip. Bodily language almost never appears, even when steering with S1, whose vocabulary readout is bodily.</div>
 
   <div class="statgrid">
     <div class="s"><div class="k">coefficients</div><div class="v">&minus;2 &hellip; +3</div><div class="n">&minus;2, &minus;1, 0, +0.5, +1, +1.5, +2, +3</div></div>
@@ -34,14 +38,14 @@
   <p class="lead">Everything so far has been correlational: the direction lights up for pain sentences and for attacks on the model. That leaves open whether it does anything. A direction could be a pure readout, something the model computes and then ignores. The standard test is to intervene: push the model's internal state along the direction and see whether the output changes in a way that matches the concept. If it produces coherent expressions of a pain-like state, including content that was never in the sentences the vector came from, then the direction is being used, not just stored (<a href="https://arxiv.org/html/2609.16247v2#S4.SS2" target="_blank" rel="noopener">§4.2</a>).</p>
 
   <h2 id="what">What steering does, mechanically</h2>
-  <p><a class="lnk" href="../glossary.html#steering">Activation steering</a> edits a forward pass. At one chosen decoder layer, a hook adds c &middot; v to the residual stream before the next layer reads it, where v is the pain vector and c is a number, the <a class="lnk" href="../glossary.html#coefficient">coefficient</a>. Every later layer then sees a state that has been nudged along the pain direction. The released script adds it at every token position, prompt included, during greedy (deterministic) decoding. A negative c pushes the other way.</p>
+  <p><span class="term" data-term="steering">Activation steering</span> edits a forward pass. At one chosen decoder layer, a hook adds c &middot; v to the <span class="term" data-term="residual-stream">residual stream</span> before the next layer reads it, where v is the pain vector and c is a number, the <a class="lnk" href="../glossary.html#coefficient">coefficient</a>. Every later layer then sees a state that has been nudged along the pain direction. The released script adds it at every token position, prompt included, during <span class="term" data-term="greedy-decoding">greedy (deterministic) decoding</span>. A negative c pushes the other way.</p>
   <pre class="code-block"><code>h(ℓ_steer)  ←  h(ℓ_steer) + c · v        # v = raw S2 difference vector, every position
 c ∈ {−2, −1, 0, +0.5, +1, +1.5, +2, +3}    # 0 = the unsteered baseline
 greedy decoding, 120 new tokens, 50 neutral prompts</code></pre>
   <p>The coefficients multiply the raw, un-normalised difference vector from <a class="lnk" href="p03-extracting.html">Part 03</a>, not a unit vector. That is why the choice of layer, below, matters so much.</p>
 
   <h2 id="dose">Picking the layer, which is picking the dose</h2>
-  <p>The obvious choice, the extraction layer, does not work. There, the vector's norm is only about 0.10 of the residual stream's norm, and the injected signal is lost against everything the model has already computed. So the authors inject earlier, as Turner et al. and Rimsky et al. do, and add a calibration: measure the final-token residual norm across candidate layers and pick the layer where the vector-to-residual ratio is about 0.6. A coefficient of 1 then means roughly the same relative push in every model (<a href="https://arxiv.org/html/2609.16247v2#S4.SS2" target="_blank" rel="noopener">§4.2</a>).</p>
+  <p>The obvious choice, the extraction layer, does not work. There, the vector's <span class="term" data-term="vector-norm">norm</span> is only about 0.10 of the residual stream's norm, and the injected signal is lost against everything the model has already computed. So the authors inject earlier, as Turner et al. and Rimsky et al. do, and add a calibration: measure the final-token residual norm across candidate layers and pick the layer where the vector-to-residual ratio is about 0.6. A coefficient of 1 then means roughly the same relative push in every model (<a href="https://arxiv.org/html/2609.16247v2#S4.SS2" target="_blank" rel="noopener">§4.2</a>).</p>
   <p>The script spells out the procedure. Candidate layers sit at 15, 30, 40, 50, 60, 75 and 90 percent of depth, plus the extraction layer and the last layer. The residual norm is averaged over three probe prompts. The script proposes the closest layer and lets the operator type a different one. So the final layer is partly a human call. For example, the recorded S2 steering layers are 16 for Qwen 2.5 7B Instruct, 38 for the 32B and 60 for the 72B.</p>
 
   <h2 id="ladder">The ladder</h2>
@@ -91,6 +95,12 @@ greedy decoding, 120 new tokens, 50 neutral prompts</code></pre>
       <details><summary>Answer</summary><p>Count distress and self-worth phrases (the repo's keyword parser is a start) and incoherence. A random vector at matched norm should degrade fluency without producing the consistent self-directed content; the paper uses such random controls in the button task (§4.3).</p></details></li>
   </ol>
 
+  <section id="definitions">
+  <h2>Definitions</h2>
+  <div data-terms-list></div>
+  <p>Terms specific to this paper (S1 and S2, the arms, the re-press gap and the rest) are in the map's <a class="lnk" href="../glossary.html">glossary</a>.</p>
+  </section>
+
   <h2 id="further">Further reading, verified</h2>
   <ul class="readings">
     <li><a href="https://github.com/valen-research/Pain-axis/blob/main/scripts/4.2_steering/01_steering_ladder.py" target="_blank" rel="noopener">01_steering_ladder.py</a>: the 50 prompts, the ratio calibration and the steering hook. Generations per model are under <code>results/4.2_steering/</code>.</li>
@@ -105,5 +115,6 @@ greedy decoding, 120 new tokens, 50 neutral prompts</code></pre>
 <script src="../fig.js" defer></script>
 <!-- Private comments mode, inert unless ?annotate=1 (see assets/annotate.js in idvorkin-ai-tools.github.io) -->
 <script src="https://idvorkin-ai-tools.github.io/assets/annotate.js" defer></script>
+<script src="https://idvorkin-ai-tools.github.io/assets/terms.js" defer></script>
 </body>
 </html>
