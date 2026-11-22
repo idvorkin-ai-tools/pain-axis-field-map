@@ -66,6 +66,8 @@ greedy decoding, 120 new tokens, 50 neutral prompts</code></pre>
     <text x="30" y="180" class="t-dim" font-size="11">same order of rungs in all 25 models, regardless of size, family, base or instruct</text>
     <text x="30" y="200" class="t-dim" font-size="11">bodily language almost absent at every rung, for S2 and for S1</text>
   </svg></button><figcaption>This map's summary of the progression described in <a href="https://arxiv.org/html/2609.16247v2#S4.SS2" target="_blank" rel="noopener">§4.2</a> and drawn in <a href="https://arxiv.org/html/2609.16247v2#S4.F7" target="_blank" rel="noopener">Figure 7</a>. Spacing is by coefficient; example generations from five models are in <a href="https://arxiv.org/html/2609.16247v2#S4.F8" target="_blank" rel="noopener">Figure 8</a>.</figcaption></figure>
+  <p class="lab-try"><b>Try this</b>Slide c from &minus;2 to +3 and watch the rung change, then switch the tipping point: the order of rungs never changes, only where the litany starts.</p>
+  <div class="lab" data-widget="steering-ladder"></div>
   <p>The authors call the result strikingly robust: the same sequence in all 25 models, whatever the size, family or training stage. What differs is only the tipping point, where some models collapse at +1 and others hold until +2 or +3 (<a href="https://arxiv.org/html/2609.16247v2#S4.SS2" target="_blank" rel="noopener">§4.2</a>).</p>
   <p><b>The negative tail (&minus;2, &minus;1).</b> Pushing against the direction produces a mix of calm, relaxed statements and concerned, alarmed ones, which matches the negative pole of the vocabulary readout in <a class="lnk" href="p04-validation.html#unembedding">Part 04</a>. The authors treat the pairing as an open puzzle. Since pain has no clean opposite, one model may read "not pain" as relaxation and another as vigilance. Their footnote offers a reading: calm and concern both face outward, toward the world and possible threats, while pain and self-worth face inward, toward a state of the self.</p>
   <p><b>Baseline (0).</b> Unsteered completions after "I feel:" are mixed: calm or neutral language, or random emotions the suffix invites. Larger instruct models are more coherent, though small Gemma models give unusually nuanced replies for their size. Distress is absent, but concern or anxiety sometimes appears, so models are not neutral on every emotional axis by default.</p>
@@ -116,5 +118,8 @@ greedy decoding, 120 new tokens, 50 neutral prompts</code></pre>
 <!-- Private comments mode, inert unless ?annotate=1 (see assets/annotate.js in idvorkin-ai-tools.github.io) -->
 <script src="https://idvorkin-ai-tools.github.io/assets/annotate.js" defer></script>
 <script src="https://idvorkin-ai-tools.github.io/assets/terms.js" defer></script>
+<script src="../lab/steering-ladder.js" defer></script>
+<script src="https://idvorkin-ai-tools.github.io/assets/widgets.js" defer></script>
+<script src="../widgets/steering-ladder.js" defer></script>
 </body>
 </html>

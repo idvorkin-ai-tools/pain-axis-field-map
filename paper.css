@@ -151,8 +151,16 @@ dl.gloss dd{margin:4px 0 0;color:var(--ink-mid);max-width:68ch}
 
 /* shared terms (hub assets/terms.js): the Definitions h2 already labels the list */
 #definitions .gl-list-h{display:none}
+/* widget: steering ladder (parts/p06-steering.html#ladder) */
+.sl-tips{border:0;margin:4px 0;padding:0;display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center}
+.sl-tips legend{float:left;font-size:13px;color:var(--ink-mid);margin-right:4px;padding:0}
+.sl-tip{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--ink-mid);display:inline-flex;align-items:center;gap:6px;min-height:32px;cursor:pointer}
+.sl-tip input{accent-color:var(--def);margin:0}
+.lab .sl-desc{color:var(--ink-mid);font-size:14px}
+.lab svg.dg{max-width:520px;margin:8px auto}
+.lab .lab-sl label{margin-bottom:6px}
 /* top bar on phones: brand, the Plain/Tech/ELI5 control and the back link share 390px */
-@media (max-width:560px){.bar-in{gap:8px;padding-left:12px;padding-right:12px}.bar .brand{font-size:11px;letter-spacing:0;gap:6px}.bar .back{padding:6px 2px;font-size:11px}}
+@media (max-width:560px){.bar-in{gap:8px;padding-left:12px;padding-right:12px}.bar .brand{font-size:10px;letter-spacing:-.02em;gap:6px;flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis}.bar .dot{flex-shrink:0}.bar .back{padding:6px 0;font-size:11px}}
 
 /* figures: float beside text, click to enlarge (Igor's diagram feedback, 2026-10) */
 figure.fig{float:right;clear:right;width:min(46%,390px);margin:6px 0 18px 24px}
